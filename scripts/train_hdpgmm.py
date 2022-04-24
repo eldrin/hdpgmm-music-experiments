@@ -3,7 +3,7 @@ import argparse
 import logging
 import json
 import sys
-sys.path.append(Path(__file__).parent.parent.as_posix())
+sys.path.append((Path(__file__).parent.parent.parent / 'pytorch-hdpgmm').as_posix())
 
 from hdpgmm import model as hdpgmm_gpu  # gpu
 from hdpgmm.data import HDFMultiVarSeqDataset
