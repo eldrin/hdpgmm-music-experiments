@@ -2,7 +2,6 @@ from pathlib import Path
 import copy
 from functools import partial
 import argparse
-import os
 import json
 
 
@@ -64,10 +63,10 @@ parser.add_argument("--batch-update", type=bool, default=False,
                     action=argparse.BooleanOptionalAction,
                     help=("if set as True, model update considering the full-batch "
                           "(not mini-batch)"))
-parser.add_argument("--n-max-inner-iter", type=int, default=100,
+parser.add_argument("--n-max-inner-iter", type=int, default=1000,
                     help=("the maximum number of inner inference loop per documents "
                           "within the mini-batch"))
-parser.add_argument("--e-step-tol", type=float, default=1e-4,
+parser.add_argument("--e-step-tol", type=float, default=1e-6,
                     help=("if the improvement of likelihood for current mini-batch "
                           "stops improving this factor (proportionally to the prev vlaue), "
                           "E-step inner loop terminates and move on the next mini-batch"))
