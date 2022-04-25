@@ -50,7 +50,7 @@ parser.add_argument("--whiten", type=bool, default=True,
                     action=argparse.BooleanOptionalAction,
                     help=("if set, feature dimension of the input sequences are "
                           "whitened using the precision matrix and mean vector."))
-parser.add_argument("--share-alpha0", type=bool, default=True,
+parser.add_argument("--share-alpha0", type=bool, default=False,
                     action=argparse.BooleanOptionalAction,
                     help=("set the model shares the DP prior ('alpha0') "
                           "across the whole corpus. Otherwise, each document "
