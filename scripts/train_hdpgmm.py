@@ -26,6 +26,9 @@ def parse_arguments():
     parser.add_argument("--warm-start", default=None,
                         help=("filename of the checkpoint of the model for "
                               "the warm-start"))
+    parser.add_argument("--device", default=None,
+                        help=("the main device that 'pytorch' uses to compute."
+                              "it overrides the configuration setup if given"))
     parser.add_argument('--verbose', default=True,
                         action=argparse.BooleanOptionalAction,
                         help="set verbosity")
@@ -42,6 +45,8 @@ def main():
 
     with Path(args.config).open('r') as fp:
         config = json.load(fp)
+        if args.device:
+            config['model']['device'] = args.device
 
     if args.warm_start is not None:
         if Path(args.warm_start).exists():
