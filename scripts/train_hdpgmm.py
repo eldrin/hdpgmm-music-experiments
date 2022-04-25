@@ -1,4 +1,5 @@
 from pathlib import Path
+import pickle as pkl
 import argparse
 import logging
 import json
@@ -22,6 +23,9 @@ def parse_arguments():
     )
     parser.add_argument("config", type=str,
                         help="filename for the training configuration")
+    parser.add_argument("--warm-start", default=None,
+                        help=("filename of the checkpoint of the model for "
+                              "the warm-start"))
     parser.add_argument('--verbose', default=True,
                         action=argparse.BooleanOptionalAction,
                         help="set verbosity")
@@ -39,13 +43,25 @@ def main():
     with Path(args.config).open('r') as fp:
         config = json.load(fp)
 
+    if args.warm_start is not None:
+        if Path(args.warm_start).exists():
+            with Path(args.warm_start).open('rb') as fp:
+                warm_start = pkl.load(fp)
+        else:
+            raise FileNotFoundError(
+                "[ERROR] can't find the given model check point file!"
+            )
+    else:
+        warm_start = None
+
     dataset = HDFMultiVarSeqDataset(
         config['dataset']['path'],
-        whiten=config['dataset']['whiten']
+        whiten = config['dataset']['whiten']
     )
 
     ret = hdpgmm_gpu.variational_inference(
         dataset,
+        warm_start_with = warm_start
         **config['model']
     )
 
