@@ -61,7 +61,7 @@ def main():
 
     ret = hdpgmm_gpu.variational_inference(
         dataset,
-        warm_start_with = warm_start
+        warm_start_with = warm_start,
         **config['model']
     )
 
