@@ -111,7 +111,7 @@ save_every = (
 
 default = {
     'dataset': {
-        'path': args.train_data,
+        'path': Path(args.train_data).resolve().as_posix(),
         'whiten': True
     },
     'model': {
@@ -131,7 +131,7 @@ default = {
         'save_every': save_every,
         'data_parallel_num_workers': args.data_parallel_num_workers,
         'prefix': args.prefix,
-        'out_path': args.model_out,
+        'out_path': Path(args.model_out).resolve().as_posix(),
         'device': args.device,  # we will experiment on nVidia GPUs
         'verbose': args.verbose
     }
@@ -142,7 +142,7 @@ default = {
 ############
 
 configs = []
-for noise_ratio in [0, 1e-4, 1e-3, 1e-2, 1e-1]:
+for noise_ratio in [0, 1e-4, 1e-3, 1e-2, 1e-1, 5e-1]:
     tmp_ = copy.deepcopy(default)
     tmp_['model']['base_noise_ratio'] = noise_ratio
     cur_prefix = tmp_['model']['prefix']
