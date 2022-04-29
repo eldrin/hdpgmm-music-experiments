@@ -81,17 +81,25 @@ The abstract should be placed at the top left column and should contain about 15
 %
 \section{Introduction}\label{sec:introduction}
 
-This template includes all the information about formatting manuscripts for the ISMIR \conferenceyear\ Conference.
-Please follow these guidelines to give the final proceedings a uniform look.
-Most of the required formatting is achieved automatically by using the supplied
-style file (\LaTeX) or template (Word).
-If you have any questions, please contact the Program Committee (\texttt{ismir\conferenceyear-papers@ismir.net}).
-This template can be downloaded from the ISMIR \conferenceyear\ web site (\texttt{http://ismir\conferenceyear.ismir.net}).
+blah blah
 %
-\section{Paper Length \& File Size}
-We adopt a ``(6+n)-page policy'' for ISMIR \conferenceyear. That is, each paper may have a maximum of six pages of technical content (including figures and tables) \textcolor{red}{with additional optional pages that contain only references and acknowledgments. Note that acknowledgments should not be included in the anonymized submission.}
 
-Paper should be submitted as PDFs and the \textcolor{red}{file size is limited to 10MB}. Please compress images and figures as necessary before submitting.
+\section{Related works}\label{sec:rel_works}
+
+blah blah
+%
+\section{HDPGMM}\label{sec:hdpgmm}
+
+In this subsection, we introduce the main model we employ for this study; the Hiararchical Dirichlet Process Gaussian Mixture Model (HDPGMM). To introduce the model properly it would be useful to start discussing the Dirichlet Process Mixture Model (DPMM), the model on which HDPGMM is extended.
+
+\subsection{Dirichlet Process Mixture Models}
+
+Mixture models such as GMMs assumes a finite number of components from which each of observed feature vectors are drawn. It is well known that finding the optimal number $K$ of the mixuture components is a difficult problem. There are a few approaches that can estimate $K$, for instance, by using the cross-validation. Dirichlet Process Mixture Model (DPMM) circumbents this problem by parametrizing the number of mixtures as part of the model. DP plays a central role for such models.
+
+DP is a stochastic process which draws arbitrary probability distributions. Due to this property, it is often described as a distribution over distributions \cite{DBLP:reference/ml/Teh17}. It is the core building block of the Bayesian non-parametric models such as infinite mixture models. Setting DP as a prior distribution for the responsibility $\pi$ (also often referred as mixture probability) of mixture components allows the model infer both the relative weight among components and the appropriate number of maximum components for given observations.
+
+
+
 
 \section{Page Size}\label{sec:page_size}
 
