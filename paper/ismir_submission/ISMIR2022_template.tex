@@ -23,8 +23,8 @@
 
 % Title. Please use IEEE-compliant title case when specifying the title here,
 % as it has implications for the copyright notice
-% ------
-\title{Paper Template for ISMIR \conferenceyear}
+% -----
+\title{Revisiting "Shallow" Music Representation Learning with HDPGMM}
 
 % Note: Please do NOT use \thanks or a \footnote in any of the author markup
 
@@ -94,10 +94,25 @@ In this subsection, we introduce the main model we employ for this study; the Hi
 
 \subsection{Dirichlet Process Mixture Models}
 
-Mixture models such as GMMs assumes a finite number of components from which each of observed feature vectors are drawn. It is well known that finding the optimal number $K$ of the mixuture components is a difficult problem. There are a few approaches that can estimate $K$, for instance, by using the cross-validation. Dirichlet Process Mixture Model (DPMM) circumbents this problem by parametrizing the number of mixtures as part of the model. DP plays a central role for such models.
+Mixture models such as GMMs assumes a finite number of components from which each of observed feature vectors are drawn. It is well known that finding the optimal number $K$ of the mixuture components is a difficult problem. There are a few approaches that can be useful to estimate $K$, for instance, using the cross-validation. Dirichlet Process Mixture Model (DPMM) circumbents this problem by parametrizing the number of mixtures as part of the model. DP plays a central role for such models.
 
-DP is a stochastic process which draws arbitrary probability distributions. Due to this property, it is often described as a distribution over distributions \cite{DBLP:reference/ml/Teh17}. It is the core building block of the Bayesian non-parametric models such as infinite mixture models. Setting DP as a prior distribution for the responsibility $\pi$ (also often referred as mixture probability) of mixture components allows the model infer both the relative weight among components and the appropriate number of maximum components for given observations.
+DP is a stochastic process which draws random probability distributions. Due to this property, it is often described as a distribution over distributions \cite{DBLP:reference/ml/Teh17}. Another important characteristic of DP is that it assumes the existence of a countable infinite number of mixtures components while only a finite subset of them are emerged from the observations~\cite{DBLP:reference/ml/Teh17}. This aspect is the core building block of the Bayesian non-parametric models such as infinite mixture models. Setting DP as a prior distribution for the responsibility $\pi$ (also often referred as mixture probability) of mixture components allows the mixture model to infer both the relative weight among components and the appropriate number of maximum components for given observations.
 
+Among a several ways to represent DP, we introduce the Stick-Breaking construction~\cite{sethuraman94}.
+\footnote{Literature commonly chooses the Chinese Restaurant Process (CRP) for a illustrative metaphor for DP as it is intuitive and well explains various properties of DP~\cite{DBLP:reference/ml/Teh17}. We mainly discuss DP with the stick-breaking construction due to its further usage in the model inference within the work. For readers interested in other metaphorical descriptions of DP, we kindly refer them to~\cite{DBLP:reference/ml/Teh17, DBLP:conf/ismir/HoffmanBC08}}
+Stick-breaking constructs DP in a simple and general manner. Formally, it is as follows:
+
+\begin{equation}
+\begin{aligned}[c]
+    \beta^{\prime}_{k} &\sim \text{Beta}(1, \gamma) \\
+    \beta_{k} &= \beta^{\prime}_{k} \prod_{l=1}^{k-1} (1 - \beta_{l}^{\prime}) \\
+\end{aligned}
+\qquad\qquad
+\begin{aligned}[c]
+    \phi_{k} &\sim H \\
+    G_{0} &= \sum^{\infty}_{k=1} \beta_{k}\delta_{\phi_{k}}
+\end{aligned}
+\end{equation}
 
 
 
