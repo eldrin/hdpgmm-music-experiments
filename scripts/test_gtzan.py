@@ -72,7 +72,7 @@ def main():
     task = results['task']
     filename = Path(args.model_path).name
     model_class = results['model_class']
-    out_fn = Path(args.out_path) / f'{model_class}_{task}.json'
+    out_fn = Path(args.out_path) / f'{model_class}_{task}_{filename}.json'
     with out_fn.open('w') as fp:
         json.dump(results, fp)
     logger.info('Saving done!')

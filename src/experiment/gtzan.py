@@ -3,7 +3,6 @@ from functools import partial
 
 import pandas as pd
 import numpy as np
-from sklearn.metrics import f1_score
 import h5py
 
 from tqdm import tqdm
@@ -14,7 +13,8 @@ from .common import (MultClassClfTarget,
                      TestDataset,
                      process_loudness,
                      classification_test,
-                     MODEL_MAP)
+                     MODEL_MAP,
+                     _macro_f1_scoring)
 
 
 def load_gtzan(
@@ -69,7 +69,7 @@ def load_gtzan(
 
         targets = np.array([g.decode() for g in hf['targets'][:]])
 
-    # wrap the raw dataset into the 
+    # wrap the raw dataset into the
     dataset = MVVarSeqData(np.array(indptr_), np.concatenate(data_), ids)
 
     # build target
@@ -107,13 +107,12 @@ def run_experiment(
     config = model.get_config()
 
     accs = []
-    metric = partial(f1_score, average='macro')
     with tqdm(total=n_iters, ncols=80, disable=not verbose) as prog:
         for _ in range(n_iters):
             acc = classification_test(model, dataset,
                                       n_jobs=n_jobs,
-                                      eval_metric=metric)
-            accs.append(np.mean(acc))
+                                      eval_metric=_macro_f1_scoring)
+            accs.append(acc)
             prog.update()
 
     result = config.copy()

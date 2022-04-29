@@ -11,7 +11,7 @@ from numba.typed import List as TypedList
 from scipy.stats import uniform, loguniform
 from scipy import sparse as sp
 
-from sklearn.metrics import (accuracy_score,
+from sklearn.metrics import (accuracy_score, f1_score,
                              roc_auc_score,
                              average_precision_score)
 from sklearn.linear_model import LogisticRegression
@@ -283,6 +283,13 @@ def _accuracy_scoring(model, x_test, y_test):
     return accuracy_score(y_test, y_pred)
 
 
+def _macro_f1_scoring(model, x_test, y_test):
+    """
+    """
+    y_pred = model.predict(x_test)
+    return f1_score(y_test, y_pred, average='macro')
+
+
 def score_clf(
     eval_metric: Union[Callable, dict[str, Callable]],
     model: object,  # fitted meta-estimator, such as RandomizedSearchCV
@@ -462,7 +469,7 @@ def _split_data(
 ) -> tuple[tuple[sp.csr_matrix,  # train
                  sp.csr_matrix], # valid_test
            tuple[int,  # train user index bound
-                 int]]: # valid user index bound 
+                 int]]: # valid user index bound
     """
     """
     # sample valid / test users
@@ -605,7 +612,7 @@ def _knn_recsys_test(
                          test_user_ratio=test_user_ratio)
     (train, valid_test), (trn_bnd, val_bnd) = splits
 
-    # sweep over the candidate range of `k` to find the best 
+    # sweep over the candidate range of `k` to find the best
     Ms = {}
     valid_accs = []
     for k in k_range:
