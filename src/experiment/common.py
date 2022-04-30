@@ -346,8 +346,8 @@ def classification_test(
     elif isinstance(dataset.target, MultClassClfTarget):
         est = Pipeline([('z_score', StandardScaler()),
                         ('lr', LogisticRegression(max_iter=20000))])
-        # dist = dict(lr__C=loguniform(1e-3, 1e+3))
-        dist = dict(lr__C = (1e-3, 1e+3, 'log-uniform'))
+        dist = dict(lr__C=loguniform(1e-3, 1e+3))
+        # dist = dict(lr__C = (1e-3, 1e+3, 'log-uniform'))
 
     else:
         raise ValueError('[Error] task not known!')
