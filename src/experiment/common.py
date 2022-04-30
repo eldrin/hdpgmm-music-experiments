@@ -19,6 +19,7 @@ from sklearn.model_selection import RandomizedSearchCV, ShuffleSplit
 from sklearn.pipeline import Pipeline
 from sklearn.multioutput import ClassifierChain, MultiOutputClassifier
 from sklearn.preprocessing import StandardScaler
+# from skopt import BayesSearchCV
 
 import torch
 import h5py
@@ -337,11 +338,16 @@ def classification_test(
                     lr__learning_rate=loguniform(1e-7, 1e-1),
                     lr__batch_size=[256, 512, 1024, 2048],
                     lr__max_iter=[250, 500, 1000, 2000])
+        # dist = dict(lr__alpha=(1e-4, 1e+4, 'log-uniform'),
+        #             lr__learning_rate=(1e-7, 1e+1, 'log-uniform'),
+        #             lr__batch_size=[256, 512, 1024, 2048],
+        #             lr__max_iter=[250, 500, 1000, 2000])
 
     elif isinstance(dataset.target, MultClassClfTarget):
         est = Pipeline([('z_score', StandardScaler()),
                         ('lr', LogisticRegression(max_iter=20000))])
-        dist = dict(lr__C=loguniform(1e-3, 1e+3))
+        # dist = dict(lr__C=loguniform(1e-3, 1e+3))
+        dist = dict(lr__C = (1e-3, 1e+3, 'log-uniform'))
 
     else:
         raise ValueError('[Error] task not known!')
@@ -370,6 +376,11 @@ def classification_test(
                                  n_jobs=n_jobs,
                                  n_iter=n_rnd_srch_iter,
                                  cv=cv_)
+        # clf = BayesSearchCV(est, dist,
+        #                     scoring=eval_metric,
+        #                     refit=refit,
+        #                     n_iter=n_rnd_srch_iter,
+        #                     cv=cv_)
 
         # find best model
         search = clf.fit(X[train_valid_idx], y[train_valid_idx])
@@ -385,6 +396,10 @@ def classification_test(
                                      scoring=eval_metric,
                                      refit=True,
                                      n_iter=n_rnd_srch_iter)
+            # clf = BayesSearchCV(est, dist,
+            #                     scoring=eval_metric,
+            #                     refit=refit,
+            #                     n_iter=n_rnd_srch_iter)
             search = clf.fit(X[train_idx], y[train_idx])
 
             acc = score_clf(eval_metric, search, X[test_ix], y[test_ix])
