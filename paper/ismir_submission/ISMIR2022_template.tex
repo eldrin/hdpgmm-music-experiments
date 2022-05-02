@@ -156,7 +156,7 @@ In many data structure, groupings of atomic data points arise naturally (i.e., a
     G_{j} &= \sum^{\infty}_{t = 1} \pi_{jt}\delta_{\psi_{jt}}
 \end{aligned}
 \end{equation}
-As seen above, HDP indeed appears as the recursion of multiple levels of DPs\footnote{It implies naturally that multiple levels are possible (i.e., corpus - author - document), if it suits to the data structure.}. Notably, the base distribution $G_{0}$ of each group-level DP is from the corpus-level DP. This relationship allows to map group-level atoms $\psi_{jt}$ to the corpus-level atoms $\phi_{k}$. Wang \emph{et al.} introduce a series of indicator variables $c_{jt}$ which maps $\psi_{jt}$ and $\phi_{k}$ as follows\cite{DBLP:journals/jmlr/WangPB11}:
+As seen above, HDP indeed appears as the recursion of multiple levels of DPs\footnote{It implies naturally that multiple levels are possible (i.e., corpus - author - document), if it suits to the data structure.}. Notably, the base distribution $G_{0}$ of each group-level DP is from the corpus-level DP. This relationship allows to map group-level atoms $\psi_{jt}$ to the corpus-level atoms $\phi_{k}$. Wang et al. introduce a series of indicator variables $c_{jt}$ which maps $\psi_{jt}$ and $\phi_{k}$ as follows\cite{DBLP:journals/jmlr/WangPB11}:
 
 
 \begin{equation}\label{eq:psi2phi}
@@ -193,8 +193,22 @@ where we use the indicator $z_{jn}$ to select $\psi_{jt}$, which eventually is m
 
 \subsection{Inference Algorithm}\label{sec:hdpgmm:inference}
 
-In this section we discuss the inference (training) algorithm. We employ the online Variational Inference (VI)~\cite{DBLP:journals/jmlr/WangPB11}. VI is one of the common choices to infer a fully Bayesian models and usually significantly faster than other methods such as Markov Chain Monte Carlo (MCMC) with the expense of its relative precision. VI finds model that maximizes the posterior approximated up to the constant of the Kullback-Leibler (KL) divergence of interest. KL divergence 
+In this section we discuss the inference (training) algorithm. We employ the online Variational Inference (VI)~\cite{DBLP:journals/jmlr/WangPB11}. VI is one of the common choices to infer a fully Bayesian models and usually significantly faster than other methods such as Markov Chain Monte Carlo (MCMC) with the expense of its relative precision. VI seeks the simpler, approximated version of the true posterior by minimizing the Kullback-Leibler (KL) divergence between approximation and the true posterior.
+% TODO: add bit more about the VI being approximating posterior (i.e., ln p(X) = L(q) + KL(q||p))
+% p(Z|X) : posterior for variables Z
+% p(X) : model evidence
+% q(Z) : approximated posterior, which we'll set as fully-factorized one for the mean-field method
+One of the popular simpliciation is full-factorization of the joint distribution~\cite{DBLP:journals/jei/BishopN07}:
 
+\begin{equation}\label{eq:meanfield_vi_general}
+    q(Z) = \prod^{|Z|}_{i=1} q_{i}(Z_{i})
+\end{equation}
+where $Z$ is set of all latent variables and parameters to be infered through VI. In the context of HDPGMM, we have the following factorization:
+
+\begin{equation}\label{eq:meanfield_vi_hdpgmm}
+    q(\beta^{\prime}, \pi^{\prime}, c, z, \phi) = q(\beta^{\prime})q(\pi^{\prime})q(c)q(z)q(\phi)
+\end{equation}
+where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportion, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers the parameter(s) for the $F$ which draws the atomic observation, which is set as (multivariate) Gaussian in our context.
 
 % For bibtex users:
 \bibliography{ISMIRtemplate}
