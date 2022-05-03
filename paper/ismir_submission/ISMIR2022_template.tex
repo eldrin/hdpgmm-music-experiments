@@ -193,22 +193,53 @@ where we use the indicator $z_{jn}$ to select $\psi_{jt}$, which eventually is m
 
 \subsection{Inference Algorithm}\label{sec:hdpgmm:inference}
 
-In this section we discuss the inference (training) algorithm. We employ the online Variational Inference (VI)~\cite{DBLP:journals/jmlr/WangPB11}. VI is one of the common choices to infer a fully Bayesian models and usually significantly faster than other methods such as Markov Chain Monte Carlo (MCMC) with the expense of its relative precision. VI seeks the simpler, approximated version of the true posterior by minimizing the Kullback-Leibler (KL) divergence between approximation and the true posterior.
+In this section we discuss the inference (training) algorithm. We employ the online Variational Inference (VI)~\cite{DBLP:journals/jmlr/WangPB11}. VI is one of the common choices to infer a fully Bayesian models and usually significantly faster than other methods such as Markov Chain Monte Carlo (MCMC) with the expense of its relative precision. VI seeks the simpler, approximated version of the true posterior by minimizing the Kullback-Leibler (KL) divergence between approximation $q(Z)$ and the true posterior $p(Z|X)$, where $Z$ denote the set of latent variables and parameters that we want to find, and $X$ refers a set of observations~\cite{DBLP:journals/jei/BishopN07}.
 % TODO: add bit more about the VI being approximating posterior (i.e., ln p(X) = L(q) + KL(q||p))
 % p(Z|X) : posterior for variables Z
 % p(X) : model evidence
 % q(Z) : approximated posterior, which we'll set as fully-factorized one for the mean-field method
-One of the popular simpliciation is full-factorization of the joint distribution~\cite{DBLP:journals/jei/BishopN07}:
+% TODO: do we need to be more explicit about these?
+One of the popular simpliciation is full-factorization of the distribution $q(Z) = \prod^{|Z|}_{i=1} q_{i}(Z_{i})$. In the context of HDPGMM, we have the following factorization:
 
-\begin{equation}\label{eq:meanfield_vi_general}
-    q(Z) = \prod^{|Z|}_{i=1} q_{i}(Z_{i})
-\end{equation}
-where $Z$ is set of all latent variables and parameters to be infered through VI. In the context of HDPGMM, we have the following factorization:
 
 \begin{equation}\label{eq:meanfield_vi_hdpgmm}
     q(\beta^{\prime}, \pi^{\prime}, c, z, \phi) = q(\beta^{\prime})q(\pi^{\prime})q(c)q(z)q(\phi)
 \end{equation}
 where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportion, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers the parameter(s) for the $F$ which draws the atomic observation, which is set as (multivariate) Gaussian in our context. Thus, $\phi$ includes the means $\mu$ and precision matrices $\Lambda$ of each Gaussian component\footnote{We adopt the result from \cite{DBLP:journals/jei/BishopN07}, where the Gaussian-Wishart distribution is used for the prior.}. 
+
+Each variational distributions further factorize as follows:
+
+
+\begin{equation}\label{eq:meanfield_further}
+\begin{aligned}
+    q(\beta^{\prime}) &= \textstyle \prod\nolimits_{k}^{K-1}\text{Beta}(\beta^{\prime}_{k}|u_{k}, v_{k}) \\
+    q(\pi^{\prime}) &= \textstyle \prod\nolimits_{t}^{T-1}\text{Beta}(\pi^{\prime}_{t}|a_{t}, b_{t}) \\
+    q(c) &= \textstyle \prod\nolimits_{j}\prod\nolimits_{t}\text{Mult}(c_{jt}|\varphi_{jt}) \\
+    q(z) &= \textstyle \prod\nolimits_{j}\prod\nolimits_{n}\text{Mult}(z_{jn}|\zeta_{jn}) \\
+\end{aligned}
+\end{equation}
+where $u_{k}, v_{k}, a_{t}, b_{t}$ denote the variational parameters for the Beta distributions for corpus-level and document-level stick proportions, respectively. $\varphi_{jt}\in\mathbf{R}^{K}, \zeta_{jn}\in\mathbf{R}^{T}$ are the variational parameters for the Multinomial distribution to draw the selector $c$ and $z$.
+
+Notably, we truncate the inifinite Beta distributions by $K$ and $T$, which is a common method for applying VI on the infinite mixture model. With sufficiently large number for the truncation, the model will still not be limited to the truncation, and will only use the number of components that suits for given dataset. Final variational distribution is the Gaussian-Wishart prior distribution which draws the Gaussian parameters for distribution $F$:
+
+
+\begin{equation}\label{eq:meanfield_normalwishart}
+    q(\mu, \Lambda) = \textstyle \prod\nolimits_{k}^{K}\mathcal{N}(\mu_{k}|m_{k}, (\lambda_{k}\Lambda_{k})^{-1})\mathcal{W}(\Lambda_{k}|W_{k}, \nu_{k})
+\end{equation}
+where we draw the precision $\Lambda_{k}\in\mathbf{R}^{d \times d}$ from Wishart distribution with the variational parameter $W_{k}\in\mathbf{R}^{d \times d}$ and $\nu_{k}\in\mathbf{R}$, and the mean $\mu_{k}\in\mathbf{R}^{d}$ is drawn by the precision weighted by $\lambda_{k}\in\mathbf{R}$ and mean $m_{k}\in\mathbf{R}^{d}$.
+
+We then can obtain the optimal model by maximizing the lowerbound of the marginal log likelihood $\text{log}\,p(X|Z)$ using the standard result of VI~\cite{DBLP:journals/jei/BishopN07, DBLP:journals/ml/JordanGJS99, 10.1214/06-BA104}:
+
+
+\begin{equation}\label{eq:lowerbound}
+\begin{aligned}
+    \text{log}\, p(X|Z) \geq \mathbf{E}_{q}[\text{log} p(X, \beta^{\prime}, \pi^{\prime}, c, z, \phi)] + H(q) \\
+    = \textstyle \sum_{j} \big\{ \mathbf{E}_{q}[\text{log}(p(X_{j}|c_{j}, z_{j}, \phi))p(z_{j}|\pi_{j}^{\prime})p(\pi^{\prime}_{j}|\alpha_{0})) \\
+    + H(q(c_{j})) + H(q(z_{j}) + H(q(\pi^{\prime}_{j})) \big\} \\
+    + \mathbf{E}_{q}[\text{log}\,p(\beta^{\prime})p(\phi)] + H(q(\beta^{\prime})) + H(q(\phi))
+\end{aligned}
+\end{equation}
+
 
 
 
