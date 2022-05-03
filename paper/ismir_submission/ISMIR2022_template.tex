@@ -208,7 +208,9 @@ where $Z$ is set of all latent variables and parameters to be infered through VI
 \begin{equation}\label{eq:meanfield_vi_hdpgmm}
     q(\beta^{\prime}, \pi^{\prime}, c, z, \phi) = q(\beta^{\prime})q(\pi^{\prime})q(c)q(z)q(\phi)
 \end{equation}
-where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportion, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers the parameter(s) for the $F$ which draws the atomic observation, which is set as (multivariate) Gaussian in our context.
+where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportion, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers the parameter(s) for the $F$ which draws the atomic observation, which is set as (multivariate) Gaussian in our context. Thus, $\phi$ includes the means $\mu$ and precision matrices $\Lambda$ of each Gaussian component\footnote{We adopt the result from \cite{DBLP:journals/jei/BishopN07}, where the Gaussian-Wishart distribution is used for the prior.}. 
+
+
 
 % For bibtex users:
 \bibliography{ISMIRtemplate}
