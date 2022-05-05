@@ -328,7 +328,7 @@ class G1(FeatureLearner):
 #         super().__init__()
 #         self.is_gpu = is_gpu
 #         self.verbose = verbose
-# 
+#
 #     @classmethod
 #     def load(
 #         cls,
@@ -341,13 +341,13 @@ class G1(FeatureLearner):
 #         # load config
 #         with open(self.config_path) as fp:
 #             config = json.load(fp)
-# 
+#
 #         # load models
 #         sclr, mdl = FeatureExtractor._load_model(model_path,
 #                                                  config_path,
 #                                                  is_gpu)
 #         self._model = dict(scaler=sclr, vgglike=mdl, config=config)
-# 
+#
 #     def _extract(self, data: MVVarSeqData) -> npt.ArrayLike:
 #         """
 #         """
