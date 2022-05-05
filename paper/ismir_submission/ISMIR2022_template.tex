@@ -14,6 +14,11 @@
 \usepackage[T1]{fontenc} % add special characters (e.g., umlaute)
 \usepackage[utf8]{inputenc} % set utf-8 as default input encoding
 \usepackage{ismir,amsmath,cite,url}
+\usepackage{amssymb}
+\usepackage[ruled]{algorithm2e}
+\usepackage{cleveref}
+\crefrangeformat{equation}{Eq.~(#3#1#4) to~(#5#2#6)}
+\Crefrangeformat{equation}{Equations~(#3#1#4) to~(#5#2#6)}
 \usepackage{graphicx}
 \usepackage{color}
 
@@ -81,13 +86,14 @@ The abstract should be placed at the top left column and should contain about 15
 %
 \section{Introduction}\label{sec:introduction}
 
-blah blah
+
 %
 
-\section{Related works}\label{sec:rel_works}
+% \section{Related works}\label{sec:rel_works}
+% 
+% blah blah
+% %
 
-blah blah
-%
 \section{HDPGMM}\label{sec:hdpgmm}
 
 In this subsection, we introduce the main model we employ for this study; the Hiararchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:conf/ismir/HoffmanBC08, doi:10.1198/016214506000000302}. To introduce the model properly it would be useful to start discussing the Dirichlet Process Mixture Model (DPMM), the model on which HDPGMM is extended.
@@ -102,7 +108,6 @@ This aspect is the core building block of the Bayesian non-parametric models suc
 Among a several ways to represent DP, we introduce the stick-breaking construction~\cite{sethuraman94}.
 \footnote{Literature commonly chooses the Chinese Restaurant Process (CRP) for a illustrative metaphor for DP as it is intuitive and well explains various properties of DP~\cite{DBLP:reference/ml/Teh17}. We mainly discuss DP with the stick-breaking construction due to its further usage in the model inference within the work. For readers interested in other metaphorical descriptions of DP, we kindly refer them to~\cite{DBLP:reference/ml/Teh17, DBLP:conf/ismir/HoffmanBC08}}
 Stick-breaking constructs DP in a simple and general manner. Formally, it is as follows:
-
 \begin{equation}\label{eq:stick_breaking}
 \begin{aligned}[c]
     \beta^{\prime}_{k} &\sim \text{Beta}(1, \gamma) \\
@@ -115,17 +120,13 @@ Stick-breaking constructs DP in a simple and general manner. Formally, it is as 
 \end{aligned}
 \end{equation}
 where two euqations in the left column represent the draw of infinite dimensional weight $\beta_{k}$ which sums to one. Notably, the distribution for $\beta$ is also referred as $\beta \sim \text{GEM}(\gamma)$~\cite{DBLP:journals/cpc/Pitman02}. In the right column, $H$ denotes the base distribution from which variable $\phi_{k}$ lying in some space $\Phi$ is drawn. The right bottom equation defines the draw of the probability measure $G_{0}$, where $\delta_{\phi_{k}}$ means the point mass centered at the component $\phi_{k}$. Altogether, Eq. \ref{eq:stick_breaking} constructs the DP $G_{0} \sim \text{DP}(\gamma, H)$. Figure \ref{fig:stick_breaking} depicts the process in graphical way.
-
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.9\linewidth]{figs/stick-breaking.pdf}
     \caption{Illustration of stick-breaking construction in Eq. \ref{eq:stick_breaking}}
     \label{fig:stick_breaking}
 \end{figure}
-
 In mixture model context, we want to infer mixture components $\{\phi_{1}, \phi_{2}, \cdots, \phi_{k}, \cdots\}$ that fits to the data observations $\{x_{1}, x_{2}, \cdots, x_{n}\}$, which are assumed to be drawn from distributions $F(\phi)$ parameterized with variable $\phi$ (i.e., mean and covariance $\phi = \{\mu, \Sigma\}$ in case of the multivariate Gaussian $F$). we can now use DP to draw $\phi$ as $i$th mixture components corresponds to the $i$th observation $x_{i}$ by introducing the cluster assignment variable $y_{i} \sim \text{Mult}(\beta)$:
-
-
 \begin{equation}\label{eq:dpmm}
 \begin{aligned}[c]
     \beta|\gamma &\sim \text{GEM}(\gamma) \\
@@ -139,12 +140,9 @@ In mixture model context, we want to infer mixture components $\{\phi_{1}, \phi_
 \end{equation}
 where $\phi_{y_{i}}$ denotes the component parameter $\phi$ indexed by assignment variable $y_{i}$ corresponding to the $i$th observation $x_{i}$.
 
-
 \subsection{Hierarchical DPMM}\label{sec:hdpgmm:hdpmm}
 
 In many data structure, groupings of atomic data points arise naturally (i.e., audio frames within a song, songs from an artist, words of a lyrics). Hierarchical DP (HDP) is an extention of DP modelling ``groupings'' by imposing group-level DPs derived from the ``global-level'' or ``corpus-level'' DP as the global pool of components~\cite{doi:10.1198/016214506000000302}. Following Sethuraman's stick-breaking construction~\cite{DBLP:journals/jmlr/WangPB11}, $j$th group-level DP can be expressed as follows:
-
-
 \begin{equation}\label{eq:hdp_doc_level}
 \begin{aligned}[c]
     \pi^{\prime}_{jt} &\sim \text{Beta}(1, \alpha_{0}) \\
@@ -157,8 +155,6 @@ In many data structure, groupings of atomic data points arise naturally (i.e., a
 \end{aligned}
 \end{equation}
 As seen above, HDP indeed appears as the recursion of multiple levels of DPs\footnote{It implies naturally that multiple levels are possible (i.e., corpus - author - document), if it suits to the data structure.}. Notably, the base distribution $G_{0}$ of each group-level DP is from the corpus-level DP. This relationship allows to map group-level atoms $\psi_{jt}$ to the corpus-level atoms $\phi_{k}$. Wang et al. introduce a series of indicator variables $c_{jt}$ which maps $\psi_{jt}$ and $\phi_{k}$ as follows\cite{DBLP:journals/jmlr/WangPB11}:
-
-
 \begin{equation}\label{eq:psi2phi}
 \begin{aligned}
     c_{jt} &\sim \text{Mult}(\beta) \\
@@ -167,8 +163,6 @@ As seen above, HDP indeed appears as the recursion of multiple levels of DPs\foo
 \end{equation}
 where $\beta$ is drawn from the corpus-level DP in Eq. \ref{eq:stick_breaking}. It simplifies the model as we do not need to explicitly represent $\psi_{jt}$~\cite{DBLP:journals/jmlr/WangPB11}.
 Finally, we can represent HDPMM by introducing another indicator variable $z_{jn} \sim \text{Mult}(\pi_{j})$ for $n$th observation $x_{jn}$ within the $j$th group, similarly to Eq. \ref{eq:dpmm}:
-
-
 \begin{equation}\label{eq:hdpmm}
 \begin{aligned}[c]
     \pi_{j}|\alpha_{0} &\sim \text{GEM}(\alpha_{0}) \\
@@ -180,9 +174,7 @@ Finally, we can represent HDPMM by introducing another indicator variable $z_{jn
     x_{jn}|z_{jn}, c_{jt}, \{\phi_{k}\} &\sim F(\theta_{jn}) 
 \end{aligned}
 \end{equation}
-where we use the indicator $z_{jn}$ to select $\psi_{jt}$, which eventually is mapped as $\phi_{c_{jz_{jn}}}$ that represents the parameter $\theta_{jn}$ to draw the observation $x_{jn}$. HDPGMM is then defined by simply setting $F$ as the (multivariate) Gaussian distribution and $H$ as one of distribution from which we can sample the mean and covariance (i.e., Gaussian-inverse Wishart distribution).
-
-
+where we use the indicator $z_{jn}$ to select $\psi_{jt}$, which eventually is mapped as $\phi_{c_{jz_{jn}}}$ that represents the parameter $\theta_{jn}$ to draw the observation $x_{jn}$. HDPGMM is then defined by simply setting $F$ as the (multivariate) Gaussian distribution and $H$ as one of distribution from which we can sample the mean and covariance (i.e., Gaussian-inverse Wishart distribution). Figure \ref{fig:hdpmm} depicts the HDPGMM graphically.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{figs/HDP-stick-breaking.pdf}
@@ -200,16 +192,12 @@ In this section we discuss the inference (training) algorithm. We employ the onl
 % q(Z) : approximated posterior, which we'll set as fully-factorized one for the mean-field method
 % TODO: do we need to be more explicit about these?
 One of the popular simpliciation is full-factorization of the distribution $q(Z) = \prod^{|Z|}_{i=1} q_{i}(Z_{i})$. In the context of HDPGMM, we have the following factorization:
-
-
 \begin{equation}\label{eq:meanfield_vi_hdpgmm}
     q(\beta^{\prime}, \pi^{\prime}, c, z, \phi) = q(\beta^{\prime})q(\pi^{\prime})q(c)q(z)q(\phi)
 \end{equation}
 where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportion, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers the parameter(s) for the $F$ which draws the atomic observation, which is set as (multivariate) Gaussian in our context. Thus, $\phi$ includes the means $\mu$ and precision matrices $\Lambda$ of each Gaussian component\footnote{We adopt the result from \cite{DBLP:journals/jei/BishopN07}, where the Gaussian-Wishart distribution is used for the prior.}. 
 
 Each variational distributions further factorize as follows:
-
-
 \begin{equation}\label{eq:meanfield_further}
 \begin{aligned}
     q(\beta^{\prime}) &= \textstyle \prod\nolimits_{k}^{K-1}\text{Beta}(\beta^{\prime}_{k}|u_{k}, v_{k}) \\
@@ -218,29 +206,102 @@ Each variational distributions further factorize as follows:
     q(z) &= \textstyle \prod\nolimits_{j}\prod\nolimits_{n}\text{Mult}(z_{jn}|\zeta_{jn}) \\
 \end{aligned}
 \end{equation}
-where $u_{k}, v_{k}, a_{t}, b_{t}$ denote the variational parameters for the Beta distributions for corpus-level and document-level stick proportions, respectively. $\varphi_{jt}\in\mathbf{R}^{K}, \zeta_{jn}\in\mathbf{R}^{T}$ are the variational parameters for the Multinomial distribution to draw the selector $c$ and $z$.
+where $u_{k}, v_{k}, a_{t}, b_{t}$ denote the variational parameters for the Beta distributions for corpus-level and document-level stick proportions, respectively. $\varphi_{jt}\in\mathbb{R}^{K}, \zeta_{jn}\in\mathbb{R}^{T}$ are the variational parameters for the Multinomial distribution to draw the selector $c$ and $z$.
 
-Notably, we truncate the inifinite Beta distributions by $K$ and $T$, which is a common method for applying VI on the infinite mixture model. With sufficiently large number for the truncation, the model will still not be limited to the truncation, and will only use the number of components that suits for given dataset. Final variational distribution is the Gaussian-Wishart prior distribution which draws the Gaussian parameters for distribution $F$:
-
-
+Notably, we truncate the inifinite Beta distributions by $K$ and $T$, which is a common method for applying VI on the infinite mixture model. With sufficiently large number for the truncation, the model will still not be limited to the truncation, and will only use the number of components that suits for given dataset. Final variational distribution is the Gaussian-Wishart prior distribution which draws the Gaussian parameters $\phi = \{\mu, \Lambda\}$ for distribution $F$:
 \begin{equation}\label{eq:meanfield_normalwishart}
-    q(\mu, \Lambda) = \textstyle \prod\nolimits_{k}^{K}\mathcal{N}(\mu_{k}|m_{k}, (\lambda_{k}\Lambda_{k})^{-1})\mathcal{W}(\Lambda_{k}|W_{k}, \nu_{k})
+    q(\phi) = \textstyle \prod\nolimits_{k}^{K}\mathcal{N}(\mu_{k}|m_{k}, (\lambda_{k}\Lambda_{k})^{-1})\mathcal{W}(\Lambda_{k}|W_{k}, \nu_{k})
 \end{equation}
-where we draw the precision $\Lambda_{k}\in\mathbf{R}^{d \times d}$ from Wishart distribution with the variational parameter $W_{k}\in\mathbf{R}^{d \times d}$ and $\nu_{k}\in\mathbf{R}$, and the mean $\mu_{k}\in\mathbf{R}^{d}$ is drawn by the precision weighted by $\lambda_{k}\in\mathbf{R}$ and mean $m_{k}\in\mathbf{R}^{d}$.
+where we draw the precision $\Lambda_{k}\in\mathbb{R}^{d \times d}$ from Wishart distribution with the variational parameter $W_{k}\in\mathbb{R}^{d \times d}$ and $\nu_{k}\in\mathbb{R}$, and the mean $\mu_{k}\in\mathbb{R}^{d}$ is drawn by the precision weighted by $\lambda_{k}\in\mathbb{R}$ and mean $m_{k}\in\mathbb{R}^{d}$.
 
-We then can obtain the optimal model by maximizing the lowerbound of the marginal log likelihood $\text{log}\,p(X|Z)$ using the standard result of VI~\cite{DBLP:journals/jei/BishopN07, DBLP:journals/ml/JordanGJS99, 10.1214/06-BA104}:
-
-
+We then can obtain the optimal model by maximizing the lowerbound of the marginal log likelihood $\text{log}\,p(X|Z)$~\cite{DBLP:journals/jei/BishopN07, DBLP:journals/ml/JordanGJS99, 10.1214/06-BA104}:
 \begin{equation}\label{eq:lowerbound}
 \begin{aligned}
-    \text{log}\, p(X|Z) \geq \mathbf{E}_{q}[\text{log} p(X, \beta^{\prime}, \pi^{\prime}, c, z, \phi)] + H(q) \\
-    = \textstyle \sum_{j} \big\{ \mathbf{E}_{q}[\text{log}(p(X_{j}|c_{j}, z_{j}, \phi))p(z_{j}|\pi_{j}^{\prime})p(\pi^{\prime}_{j}|\alpha_{0})) \\
-    + H(q(c_{j})) + H(q(z_{j}) + H(q(\pi^{\prime}_{j})) \big\} \\
-    + \mathbf{E}_{q}[\text{log}\,p(\beta^{\prime})p(\phi)] + H(q(\beta^{\prime})) + H(q(\phi))
+    \text{log}\, p(X|Z) \geq \mathbb{E}_{q}[\text{log}\,p(X, \beta^{\prime}, \pi^{\prime}, c, z, \phi)] + H(q) \\
+    = \textstyle \sum_{j} \big\{ \mathbb{E}_{q}[\text{log}\,(p(X_{j}|c_{j}, z_{j}, \phi)p(c_{j}|\beta^{\prime})p(z_{j}|\pi_{j}^{\prime})p(\pi^{\prime}_{j}|\alpha_{0}))] \\
+    + H(q(c_{j})) + H(q(z_{j})) + H(q(\pi^{\prime}_{j})) \big\} \\
+    + \mathbb{E}_{q}[\text{log}\,p(\beta^{\prime})p(\phi)] + H(q(\beta^{\prime})) + H(q(\phi))
 \end{aligned}
 \end{equation}
+where $H(\cdot)$ denotes the entropy of given distribution, and $X_{j} = \{x_{j1}, x_{j2}, \cdots, x_{jN_{j}}\}$ is a set of observations within $j$th group.\footnote{Thus, the terms inside the sum over the group would further factorized into sums of these per-group observation. We omit them to avoid the equation being too crammed.}
+
+Using the standard result of VI~\cite{DBLP:journals/jei/BishopN07, 10.1214/06-BA104, DBLP:journals/jmlr/WangPB11}, the update rules for group-level parameters are dreived as follows:
+\begin{align}
+\label{eq:doc_update:a} a_{jt} &= \textstyle 1 +  \sum_{n}\zeta_{jnt} \\
+\label{eq:doc_update:b} b_{jt} &= \textstyle \alpha_{0} +  \sum_{n}\sum^{T}_{s=t+1}\zeta_{jnt} \\
+\label{eq:doc_update:varphi} \varphi_{jtk} &\propto \text{exp}(\textstyle \sum_{n}\zeta_{jnt}\mathbb{E}_{q}[\text{log}\,p(x_{jn}|\phi_{k})] + \mathbb{E}_{q}[\text{log}\,\beta_{k}]) \\
+\label{eq:doc_update:zeta} \zeta_{jnt} &\propto \text{exp}(\textstyle \sum_{k=1}^{K} \varphi_{jtk} \mathbb{E}_{q}[\text{log}\,p(x_{jn}|\phi_{k})] + \mathbb{E}_{q}[\text{log}\,\pi_{jt}])
+\end{align}
+Similarly, the update rules for the corpus-level parameters are as follows~\cite{DBLP:journals/jei/BishopN07}:
+\begin{align}
+\label{eq:corpus_update:u} u_{k} &= 1 + \textstyle \sum_{j}\sum_{t=1}^{T} \varphi_{jtk} \\
+\label{eq:corpus_update:v} v_{k} &= \gamma + \textstyle \sum_{j}\sum_{t}^{T}\sum_{l=k+1}^{K} \varphi_{jtl} \\
+\label{eq:corpus_update:lambda} \lambda_{k} &= \lambda_{0} + N_{k} \\
+\label{eq:corpus_update:m} m_{k} &= \lambda_{k}^{-1} (\lambda_{0}m_{0} + N_{k}\bar{x}_{k}) \\
+\label{eq:corpus_update:W} W_{k}^{-1} &= W_{0}^{-1} + N_{k}S_{k} + \frac{\lambda_{0}N_{k}}{\lambda_{0} + N_{k}} (\bar{x}_{k} - m_{0})(\bar{x}_{k} - m_{0})^{\intercal} \\
+\label{eq:corpus_update:nu} \nu_{k} &= \nu_{0} + N_{k}
+\end{align}
+where $\lambda_{0}\in\mathbb{R}, m_{0}\in\mathbb{R}^{d}, \nu_{0}\in\mathbb{R}, W_{0}\in\mathbb{R}^{d\times d}$ are the hyperparameters corresponding to the weight, location, degrees of freedom, and scale of Gaussian-Wishart distribution. The sufficient statistics and expectations used above update rules are defined as follows:
+\begin{align}\label{eq:expectations_and_suffstats}
+    &\mathbb{E}_{q}[\text{log}\,\beta_{k}] = \mathbb{E}_{q}[\text{log}\,\beta_{k}^{\prime}] + \textstyle\sum_{l=1}^{k-1}\,\mathbb{E}_{q}[\text{log}\,(1 - \beta_{l}^{\prime})] \nonumber\\
+    &\mathbb{E}_{q}[\text{log}\,\beta_{k}^{\prime}] = \Psi(u_{k}) - \Psi(u_{k} + v_{k}) \nonumber\\
+    &\mathbb{E}_{q}[\text{log}\,(1 - \beta_{k}^{\prime})] = \Psi(v_{k}) - \Psi(u_{k} + v_{k}) \nonumber\\
+    &\mathbb{E}_{q}[\text{log}\,\pi_{jt}] = \mathbb{E}_{q}[\text{log}\,\pi_{jt}^{\prime}] + \textstyle\sum_{s=1}^{t-1}\,\mathbb{E}_{q}[\text{log}\,(1 - \pi_{s}^{\prime})] \nonumber\\
+    &\mathbb{E}_{q}[\text{log}\,\pi_{jt}^{\prime}] = \Psi(a_{jt}) - \Psi(a_{jt} + b_{jt}) \nonumber\\
+    &\mathbb{E}_{q}[\text{log}\,(1 - \pi_{jt}^{\prime})] = \Psi(b_{jt}) - \Psi(a_{jt} + b_{jt}) \nonumber\\
+    &N_{k} = \textstyle\sum_{j}\sum_{n}\,r_{jnk} \nonumber\\
+    &\bar{x}_{k} = \frac{1}{N_{k}}\textstyle\sum_{j}\sum_{n}\,r_{jnk}x_{jn} \nonumber\\
+    &S_{k} = \frac{1}{N_{k}}\textstyle\sum_{j}\sum_{n}\,r_{jnk}(x_{jn} - \bar{x}_{k})(x_{jn} - \bar{x}_{k})^{\intercal} \nonumber
+\end{align}
+where $\Psi(\cdot)$ refers the digamma function, and $r_{jnk} = \sum_{t=1}^{T} \zeta_{jnt}\varphi_{jtk}$ is the inferred responsibility of $n$th observation of $j$th group on $k$th component. Standard batch update would compute statistics across the entire corpus, and updates the corpus level parameters. However, it may be slow or may suffer by too large or small numbers accumulated from a large scale corpus.
+
+In this work, we employ the online VI where corpus-level parameters are updated per every group or mini-batch of group passed. In this way, the early phase of model inference can be accelerated substantially compared to the full-batch update~\cite{DBLP:journals/jmlr/WangPB11, DBLP:conf/nips/HoffmanBB10}. The corpus level update then contoled by the learning rate $\rho_{t} = (\tau_{0} + t)^{-\kappa}$, which is decayed over iterations controlled by the offset parameter $\tau_{0} > 0$ and scale $\kappa \in (0.5, 1]$:
+\begin{equation}\label{eq:minibatch_update}
+    Z_{t} = (1 - \rho_{t})Z_{t - 1} + \rho_{t}\tilde{Z}_{t}
+\end{equation}
+where $\tilde{Z}_{t}$ means one of the corpus-level parameter in \crefrange{eq:corpus_update:u}{eq:corpus_update:nu} updated by the given mini-batch at $t$th iteration, while $Z_{t-1}$ is the current parameter. To properly scale the update with respect to the mini-batch size, we weight them by the factor of $w = \frac{|\tilde{X}|}{|X|}$, where $|X|, |\tilde{X}|$ denote the number of groups within the entire observation set $X$ and the mini-batch of groups $\tilde{X}$.
+
+Combining altogether, the overall inference algorithm is described in Algorithm \ref{alg:inference}.
+
+\begin{algorithm}
+\caption{Online VI for HDPGMM}\label{alg:inference}
+Initialize $\mathbf{\phi}=(\phi_{k})^{K}_{k=1}$, $u=(u_{k})^{K}_{k=1}$, $v=(v_{k})^{K}_{k=1}$ randomly. Set $t=1$.\\
+\While{Stopping critrion is not met}{
+    Fetch a random mini-batch of groups $\tilde{X}$ \\
+    \Repeat{mini-batch likelihood stops improving}{
+        Update $a_{j}, b_{j}, \zeta_{j} \text{and} \varphi_{j}$ using \crefrange{eq:doc_update:a}{eq:doc_update:zeta}\\
+    }
+    Compute $u_{k}, v_{k}, \lambda_{k}, m_{k}, W_{k}, \text{and} \nu_{k}$ using \crefrange{eq:corpus_update:u}{eq:corpus_update:nu} \\
+    Set $\rho_{t} = (\tau_{0} + t)^{-\kappa}$, $t \gets t + 1$ \\
+    Update $u_{k}, v_{k}, \lambda_{k}, m_{k}, W_{k}, \text{and} \nu_{k}$ using Eq. \ref{eq:minibatch_update} 
+}
+\end{algorithm}
+
+\subsection{Further Regularization}\label{sec:hdpgmm:regularization}
+
+Inspired by the implementation of \cite{DBLP:journals/jmlr/WangPB11, 10.1214/06-BA104}, we apply the further regularization on the model. Specifically, we ``splash'' the uniform noise to the inferred responsibility $r_{jn}$ as it can be biased if the groups are corrupted or impcomplete, such as the preview audio of the entire song:
+\begin{equation}
+    \tilde{r}_{jn} = (1 - \eta_{t}) r_{jn} + \eta_{t} e
+\end{equation}
+$\eta_{t}$ is the regularization coefficient that determines the extent uniform noise $e = (e_{k})_{k=1}^{K}$ is mixed into $r_{jn}$. $\eta_{t} = \frac{\eta_{0} * 10^{3}}{(t + 10^{3})}$ also is defined as decaying function similar to the learning rate $\rho_{t}$.
 
 
+\subsection{DPMMs in MIR}\label{sec:hdpgmm:in_mir}
+
+%blahblah
+
+
+\section{Experimental Setup}
+
+%blahblah
+
+\section{Result and Discussion}
+
+%blahblah
+
+\section{Conclusion and Future Works}
+
+%blahblah
 
 
 % For bibtex users:
