@@ -107,12 +107,11 @@ Fuelled by these benefits, DL models can learn useful representation of the dive
 
 The Bayesian nonparametric approach is an alternative approach to achieve what DL does well in an interpretable way. As a non-parametric method, it can overcome the underfitting by unlimited model capacity, while resisting against the overfitting with its Bayesian nature~\cite{DBLP:reference/ml/Teh17}. At the same time, the model can be interpretable through its probabilistic model structure itself, as the modelling procedure is to state, or infer the data generation process in the first place.
 
-% TODO: Bayesian Nonparametric models in MIR field
+Bayesian nonparametric models have been applied in various MIR tasks for previous decades. As latent representation of music audio, it was applied to esitimate music (self) similarity~\cite{DBLP:conf/icassp/QiPC07, DBLP:conf/ismir/HoffmanBC08}. It also was employed to conduct harmonic and spectral analyses by decomposing the time-frequency representation of the music audio~\cite{Hoffman09findinglatent, DBLP:conf/icassp/NakanoRKOS11}. These analyses also have shown to be useful for downstream tasks such as the structural analysis~\cite{DBLP:conf/icassp/NakanoOKMK12} or music recommentation~\cite{DBLP:conf/ismir/YoshiiG09}. Further, discriminative model based on the Bayesian nonparametric is developed for the music emotion recognition~\cite{DBLP:journals/taffco/WangLCCH15}.
 
-While these properties seem promising for a range of complex tasks such as MIR tasks, there have been much less volume of research employing the Bayesian nonparametric approach in MIR domain compared to DL approach.
+In spite of the similar premises they propose, Bayesian nonparametric models have not yet gained as much attention as DL has. To our best knowledge, in particular, they have not been compared under similar experimental control within MIR context. 
 
 
-%
 
 % \section{Related works}\label{sec:rel_works}
 % 
@@ -121,7 +120,7 @@ While these properties seem promising for a range of complex tasks such as MIR t
 
 \section{HDPGMM}\label{sec:hdpgmm}
 
-In this subsection, we introduce the main model we employ for this study; the Hiararchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:conf/ismir/HoffmanBC08, doi:10.1198/016214506000000302}. To introduce the model properly it would be useful to start discussing the Dirichlet Process Mixture Model (DPMM), the model on which HDPGMM is extended.
+In this subsection, we introduce the main model we employ for this study, the Hiararchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:conf/ismir/HoffmanBC08, doi:10.1198/016214506000000302}. We first discuss the Dirichlet Process Mixture Model (DPMM), the model on which HDPGMM is extended.
 
 \subsection{Dirichlet Process Mixture Models}\label{sec:hdpgmm:dpmm}
 
