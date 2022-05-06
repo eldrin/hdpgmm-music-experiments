@@ -86,12 +86,30 @@ The abstract should be placed at the top left column and should contain about 15
 %
 \section{Introduction}\label{sec:introduction}
 
-Deep Learning (DL) on music signal has been a major key methodological shift in previous decade in the field of Music Information Retrieval (MIR). One of the core premises of DL is that it can learn useful feature, or representation of the input music audio signal~\cite{DBLP:conf/ismir/HumphreyBL12,DBLP:conf/ismir/HamelDYG13}. Thanks to the diverse architectures and layers are invented, this ``automatic'' feature learning can handle wide range of data structure that are common in music domain (i.e., audio signal, lyrics, graph, etc.). Such flexibility and expressiveness is deemed as the key to its vast success.
+% Skeleton
+% - DL is the major tool to do various MIR tasks (classification / generation / recommendataion / etc.)
+%   - It seems obvious as DL provides:
+%     1. flexibility / expressiveness -> fit anything
+%     2. means to fight against overfitting (regularizations) -> generalizes fine
+%     3. infrastructure (hardware acceleration / software ecosystem) -> fast and easy to do
+%   - one of the major benefits of DL (based on these properties) is that it can learn useful latent representation from the data automatically.
+% - It's not perfect though, and one of the criticisms that would apply to DL is the lack of transparency.
+% - There are some other paradigms beyond DL, that tries to achieve similar goals.
+% - Bayesian Nonparametric models can be seen as one of those methodologies.
+%   - Its premises are:
+%     1. as a non-parametric model, it achieves the necessary expressiveness
+%     2. as a Bayesian model, it inherently is robust against the overfitting
+% - One good example would be the infinite mixture model, where the model find the right size of the component that fits to the dataset, which often needs some manual search procedure such as the cross validation.
 
-% TODO: discuss the current trend further
-%       - supervised, generative models (thus, symbolic), large scale
+Deep Learning (DL) became one of the most popular and successful methodologies to tackle a various range of Music Information Retrieval (MIR) tasks; music classification~\cite{musicclassification:book}, music generation~\cite{briot2019deep}, recommendation~\cite{10.3389/fams.2019.00044} and more. Some of the known benefits are: 1) the high flexibility towards any data structure and expressiveness, 2) effective ways to handling the overfitting at the same time, and finally 3) the rapidly improving infrastructural supports, including both hardwares (i.e., accelerators such as GPU) and softwares (i.e., deep learning frameworks).
 
-In the pre-deep learning era, music representation learning still was discussed with ``shallower'' class of models~\cite{DBLP:conf/ismir/WangLWJ11, DBLP:conf/ismir/HamelDYG13, DBLP:conf/ismir/NamHSS12}.
+Fuelled by these benefits, DL models can learn useful representation of the diverse data structures, which is one of the key reasons of its success~\cite{DBLP:conf/ismir/HumphreyBL12}. At its cost, on the other hand, DL models often are criticized by its opacity and the lack of interpretability~\cite{DBLP:conf/dsaa/GilpinBYBSK18}, which also holds for the applications within MIR domain~\cite{DBLP:journals/tmm/Sturm14,DBLP:journals/cie/Sturm16}.
+
+The Bayesian nonparametric approach is an alternative approach to achieve what DL does well in an interpretable way. As a non-parametric method, it can overcome the underfitting by unlimited model capacity, while resisting against the overfitting with its Bayesian nature~\cite{DBLP:reference/ml/Teh17}. At the same time, the model can be interpretable through its probabilistic model structure itself, as the modelling procedure is to state, or infer the data generation process in the first place.
+
+% TODO: Bayesian Nonparametric models in MIR field
+
+While these properties seem promising for a range of complex tasks such as MIR tasks, there have been much less volume of research employing the Bayesian nonparametric approach in MIR domain compared to DL approach.
 
 
 %
