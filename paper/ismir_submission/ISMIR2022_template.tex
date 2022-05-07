@@ -107,16 +107,21 @@ Fuelled by these benefits, DL models can learn useful representation of the dive
 
 The Bayesian nonparametric approach is an alternative approach to achieve what DL does well in an interpretable way. As a non-parametric method, it can overcome the underfitting by unlimited model capacity, while resisting against the overfitting with its Bayesian nature~\cite{DBLP:reference/ml/Teh17}. At the same time, the model can be interpretable through its probabilistic model structure itself, as the modelling procedure is to state, or infer the data generation process in the first place.
 
-Bayesian nonparametric models have been applied in various MIR tasks for previous decades. As latent representation of music audio, it was applied to esitimate music (self) similarity~\cite{DBLP:conf/icassp/QiPC07, DBLP:conf/ismir/HoffmanBC08}. It also was employed to conduct harmonic and spectral analyses by decomposing the time-frequency representation of the music audio~\cite{Hoffman09findinglatent, DBLP:conf/icassp/NakanoRKOS11}. These analyses also have shown to be useful for downstream tasks such as the structural analysis~\cite{DBLP:conf/icassp/NakanoOKMK12} or music recommentation~\cite{DBLP:conf/ismir/YoshiiG09}. Further, discriminative model based on the Bayesian nonparametric is developed for the music emotion recognition~\cite{DBLP:journals/taffco/WangLCCH15}.
+Bayesian nonparametric models have been applied in various MIR tasks for previous decades. As latent representation of music audio, it was applied to esitimate music (self) similarity~\cite{DBLP:conf/icassp/QiPC07, DBLP:conf/ismir/HoffmanBC08}. It also was employed to conduct harmonic and spectral analyses by decomposing the time-frequency representation of the music audio into the mixture of infinite latent components~\cite{Hoffman09findinglatent, DBLP:conf/icassp/NakanoRKOS11}. These analyses also have shown to be useful for downstream tasks such as the structural analysis~\cite{DBLP:conf/icassp/NakanoOKMK12} or music recommentation~\cite{DBLP:conf/ismir/YoshiiG09}. Further, discriminative model based on the Bayesian nonparametric is developed for the music emotion recognition~\cite{DBLP:journals/taffco/WangLCCH15}.
 
-In spite of the similar premises they propose, Bayesian nonparametric models have not yet gained as much attention as DL has. To our best knowledge, in particular, they have not been compared under similar experimental control within MIR context. 
+In spite of the similar premises they propose, however, Bayesian nonparametric models have not yet gained as much attention as DL recieved. To our best knowledge, in particular, they have not been compared under similar experimental control within MIR context. As they promise quite similar high-level properties, it would worth to explore to what extent they compare.
 
+In this work, we assess the music representation learned from Bayesian nonparametric models by comparing them to the modern deep neural network models. In particular, we consider the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:journals/jmlr/WangPB11,DBLP:conf/ismir/YoshiiG09,doi:10.1198/016214506000000302} as our model of interest. The comparison can confirm the potential of Bayesian nonparametric models as a representation learner over the DL methods.
+To conretize the comparison, we employ the transfer learning experimental framework
+~\cite{DBLP:journals/nca/KimULH20, DBLP:conf/ismir/ChoiFSC17, DBLP:conf/ismir/DielemanBS11}, which is commonly used for assessing the potential of representation itself. The contribution of this work can be listed as follows:
 
+\begin{enumerate}
+    \item We explore and suggest insight how ``good'' the music representation learned by Bayesian nonparametric models is.
+    \item We provide an efficient, GPU accelerated inference algorithm for HDPGMM, which can handle relatively scaled data.
+\end{enumerate}
 
-% \section{Related works}\label{sec:rel_works}
-% 
-% blah blah
-% %
+The remaining of the paper will present the HDPGMM (Section~\ref{sec:hdpgmm}), and discuss the experimental setup (Section~\ref{sec:experimental_setup}), followed by its result and discussion (Section~\ref{sec:result_discussion}). Lastly, we conclude the paper with a few pointers for the future works (Section~\ref{sec:conclusion}).
+
 
 \section{HDPGMM}\label{sec:hdpgmm}
 
@@ -310,20 +315,34 @@ Inspired by the implementation of \cite{DBLP:journals/jmlr/WangPB11, 10.1214/06-
 $\eta_{t}$ is the regularization coefficient that determines the extent uniform noise $e = (e_{k})_{k=1}^{K}$ is mixed into $r_{jn}$. $\eta_{t} = \frac{\eta_{0} * 10^{3}}{(t + 10^{3})}$ also is defined as decaying function similar to the learning rate $\rho_{t}$.
 
 
-\subsection{DPMMs in MIR}\label{sec:hdpgmm:in_mir}
+% \subsection{DPMMs in MIR}\label{sec:hdpgmm:in_mir}
 
 %blahblah
 
 
-\section{Experimental Setup}
+\section{Experimental Setup}\label{sec:experimental_setup}
+
+\subsection{Datasets}\label{sec:experimental_setup:datasets}
+
+\subsection{Audio Feature}\label{sec:experimental_setup:feature}
+
+\subsection{Comparisons}\label{sec:experimental_setup:comparisons}
+
+\subsubsection{G1}\label{sec:experimental_setup:comparisons:g1}
+\subsubsection{VQ Codebook}\label{sec:experimental_setup:comparisons:vq}
+\subsubsection{Kim}\label{sec:experimental_setup:comparisons:kim}
+\subsubsection{CMLR}\label{sec:experimental_setup:comparisons:clmr}
+\subsubsection{HDPGMM}\label{sec:experimental_setup:comparisons:hdpgmm}
+
+\subsection{Hyper Parameters}\label{sec:experimental_setup:hyperparams}
 
 %blahblah
 
-\section{Result and Discussion}
+\section{Result and Discussion}\label{sec:result_discussion}
 
 %blahblah
 
-\section{Conclusion and Future Works}
+\section{Conclusion and Future Works}\label{sec:conclusion}
 
 %blahblah
 
