@@ -4,15 +4,12 @@ import sys
 from pathlib import Path
 import argparse
 import logging
-import warnings
 import pickle as pkl
 import multiprocessing as mp
 from functools import partial
 
 import numpy as np
-import numpy.typing as npt
 
-import librosa
 import h5py
 from tqdm import tqdm
 

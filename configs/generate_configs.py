@@ -150,6 +150,35 @@ for noise_ratio in [0, 1e-4, 1e-3, 1e-2, 1e-1, 5e-1]:
     configs.append(tmp_)
 
 # we'll do the rest once we find the best settings for the regularization
+# computing the subset performance
+# : 20k version
+for i in range(5):
+    noise_ratio = 1e-1
+    tmp_ = copy.deepcopy(default)
+    tmp_['model']['base_noise_ratio'] = noise_ratio
+    cur_prefix = tmp_['model']['prefix']
+    tmp_['model']['prefix'] = f'{cur_prefix}{len(configs):d}'
+
+    tmp_['dataset']['path'] = (
+        tmp_['dataset']['path']
+        .replace('.h5', f'_subset20000_{i+1:d}.h5')
+    )
+    configs.append(tmp_)
+
+# : 2k version
+for i in range(5):
+    noise_ratio = 1e-1
+    tmp_ = copy.deepcopy(default)
+    tmp_['model']['base_noise_ratio'] = noise_ratio
+    cur_prefix = tmp_['model']['prefix']
+    tmp_['model']['prefix'] = f'{cur_prefix}{len(configs):d}'
+
+    tmp_['dataset']['path'] = (
+        tmp_['dataset']['path']
+        .replace('.h5', f'_subset2000_{i+1:d}.h5')
+    )
+    configs.append(tmp_)
+
 
 #############
 # save files
