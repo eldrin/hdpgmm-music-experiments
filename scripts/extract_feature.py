@@ -11,7 +11,6 @@ import numpy as np
 from src.models import HDPGMM
 from src.experiment.mtat import load_mtat
 from src.experiment.gtzan import load_gtzan
-from src.experiment.lastfm1k import load_lastfm1k
 from src.experiment.echonest import load_echonest
 from src.experiment.common import (MODEL_MAP,
                                    load_model,
@@ -21,7 +20,6 @@ from src.experiment.common import (MODEL_MAP,
 DATASET_MAP = {
     'gtzan': load_gtzan,
     'mtat': load_mtat,
-    # 'lastfm1k': load_lastfm1k,
     'echonest': load_echonest
 }
 
