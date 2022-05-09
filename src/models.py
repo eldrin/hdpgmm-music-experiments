@@ -8,7 +8,7 @@ from numpy import typing as npt
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-# import torch
+import torch
 
 from tqdm import tqdm
 
