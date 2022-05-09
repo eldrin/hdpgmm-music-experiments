@@ -6,14 +6,14 @@ import h5py
 
 from tqdm import tqdm
 
-from bibim.data import MVVarSeqData
+from hdpgmm.data import HDFMultiVarSeqDataset
 
 from .common import (MultLabelClfTarget,
                      TestDataset,
+                     load_model,
                      process_loudness,
                      classification_test,
-                     _macro_aucroc_scoring_safe,
-                     MODEL_MAP)
+                     _macro_aucroc_scoring_safe)
 
 
 JORDI_TAG50 = [
@@ -104,8 +104,7 @@ def load_mtat(
     assert targets.shape[0] == (n_samples - len(black_list))
 
     # wrap the raw dataset into the 
-    dataset = MVVarSeqData(np.array(indptr_), hf['data'], ids)
-    assert len(dataset.ids) == (len(dataset.indptr) - 1)
+    dataset = HDFMultiVarSeqDataset(h5_fn)
 
     # build target
     target = MultLabelClfTarget(labels=idx2tags, label_map=targets)
@@ -130,9 +129,8 @@ def run_experiment(
         mtat_fn,
         mtat_split_fn,
     )
-    model = MODEL_MAP[model_class].load(model_fn)
-    model.n_jobs = n_jobs  # only relevant with HPDGMM for now
-    model.batch_size = batch_size
+    model = load_model(model_fn, model_class, dataset,
+                       batch_size = batch_size)
     config = model.get_config()
 
     accs = []

@@ -1,25 +1,19 @@
-from typing import Optional, Union
 from pathlib import Path
-from dataclasses import dataclass
 import pickle as pkl
 
-import numba as nb
-from numba.typed import List as TypedList
 import numpy as np
-from numpy import typing as npt
 from scipy import sparse as sp
-from threadpoolctl import threadpool_limits
 import h5py
 
 from tqdm import tqdm
 
-from bibim.data import MVVarSeqData
+from hdpgmm.data import HDFMultiVarSeqDataset
 
 from .common import (RecSysInteractionTarget,
                      TestDataset,
+                     load_model,
                      recommendation_test,
-                     process_loudness,
-                     MODEL_MAP)
+                     process_loudness)
 
 
 def _load_interaction(
@@ -99,7 +93,7 @@ def load_echonest(
     )
 
     # wrap the raw dataset into the 
-    dataset = MVVarSeqData(indptr, hf['data'], ids)
+    dataset = HDFMultiVarSeqDataset(h5_fn)
 
     # wrap the data
     target = RecSysInteractionTarget(mat, users, items)
@@ -124,9 +118,8 @@ def run_experiment(
     """
     """
     dataset, hf = load_echonest(lfm1k_h5_fn)
-    model = MODEL_MAP[model_class].load(model_fn)
-    model.n_jobs = n_jobs  # only relevant with HPDGMM for now
-    model.batch_size = batch_size
+    model = load_model(model_fn, model_class, dataset,
+                       batch_size = batch_size)
     config = model.get_config()
 
     accs = []

@@ -1,27 +1,22 @@
-from pathlib import Path
-from functools import partial
-
 import pandas as pd
 import numpy as np
 import h5py
 
 from tqdm import tqdm
 
-from bibim.data import MVVarSeqData
+from hdpgmm.data import HDFMultiVarSeqDataset
 
 from .common import (MultClassClfTarget,
                      TestDataset,
+                     load_model,
                      process_loudness,
                      classification_test,
-                     MODEL_MAP,
                      _macro_f1_scoring)
 
 
 def load_gtzan(
     h5_fn: str,
     split_fn: str,
-    exclude_1st_dim: bool = False,
-    exclude_chroma_dims: bool = False
 ) -> TestDataset:
     """
     """
@@ -53,13 +48,7 @@ def load_gtzan(
             rows.append(process_loudness(loudness_j))
 
             splits.append(id2split[hf['ids'][j].decode()])
-
             x = data[j0:j1]
-            if exclude_1st_dim:
-                x = x[:, 1:]
-            if exclude_chroma_dims:
-                x = x[:, :-12]
-
             data_.append(x)
             indptr_.append(indptr_[-1] + data_[-1].shape[0])
 
@@ -70,7 +59,7 @@ def load_gtzan(
         targets = np.array([g.decode() for g in hf['targets'][:]])
 
     # wrap the raw dataset into the
-    dataset = MVVarSeqData(np.array(indptr_), np.concatenate(data_), ids)
+    dataset = HDFMultiVarSeqDataset(h5_fn)
 
     # build target
     idx2genre = list(sorted(set(targets)))
@@ -86,8 +75,6 @@ def run_experiment(
     model_fn: str,
     gtzan_fn: str,
     gtzan_split_fn: str,
-    exclude_1st_dim: bool = False,
-    exclude_chroma_dims: bool = False,
     n_iters: int = 5,
     batch_size: int = 1024,
     n_jobs: int = 1,
@@ -98,12 +85,9 @@ def run_experiment(
     dataset = load_gtzan(
         gtzan_fn,
         gtzan_split_fn,
-        exclude_1st_dim = exclude_1st_dim,
-        exclude_chroma_dims = exclude_chroma_dims
     )
-    model = MODEL_MAP[model_class].load(model_fn)
-    model.n_jobs = n_jobs  # only relevant with HPDGMM for now
-    model.batch_size = batch_size
+    model = load_model(model_fn, model_class, dataset,
+                       batch_size = batch_size)
     config = model.get_config()
 
     accs = []

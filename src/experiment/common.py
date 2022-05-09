@@ -1,14 +1,12 @@
 from typing import Union, Optional, Callable
 from dataclasses import dataclass
 from functools import partial
-import pickle as pkl
 
 import numpy as np
 from numpy import typing as npt
 import numba as nb
-from numba.typed import List as TypedList
 
-from scipy.stats import uniform, loguniform
+from scipy.stats import loguniform
 from scipy import sparse as sp
 
 from sklearn.metrics import (accuracy_score, f1_score,
@@ -17,16 +15,11 @@ from sklearn.metrics import (accuracy_score, f1_score,
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import RandomizedSearchCV, ShuffleSplit
 from sklearn.pipeline import Pipeline
-from sklearn.multioutput import ClassifierChain, MultiOutputClassifier
 from sklearn.preprocessing import StandardScaler
-# from skopt import BayesSearchCV
 
 import torch
-import h5py
-import librosa
 
-from bibim.hdp import gaussian as hdpgmm
-from bibim.data import MVVarSeqData
+from hdpgmm.data import HDFMultiVarSeqDataset
 
 from ..models import (FeatureLearner,
                       HDPGMM, VQCodebook, G1, PreComputedFeature)
@@ -176,10 +169,35 @@ class RecSysInteractionTarget:
 
 @dataclass
 class TestDataset:
-    data: MVVarSeqData
+    data: HDFMultiVarSeqDataset
     loudness: npt.ArrayLike
     target: Union[PredictionTarget, RecSysInteractionTarget]
     splits: Optional[npt.ArrayLike] = None
+
+
+def load_model(
+    model_fn: str,
+    model_class: str,
+    dataset: TestDataset,
+    batch_size: int=32,
+) -> FeatureLearner:
+    """
+    """
+    model = MODEL_MAP[model_class].load(model_fn)
+
+    # modify dataset if model requires "whitening" of features
+    if isinstance(model, HDPGMM):
+        if model._model.whiten_params is not None:
+            dataset.data._whitening_params = model._model.whiten_params
+            dataset.data.whiten = True
+        else:
+            dataset.data._whitening_params = None
+            dataset.data.whiten = False
+
+    # add some more hyper parameters
+    model.batch_size = batch_size
+
+    return model
 
 
 def process_loudness(
@@ -192,33 +210,6 @@ def process_loudness(
         for stat_fn
         in [np.mean, np.std, percentile25, np.median, percentile75]
     ])
-
-
-def load_model(
-    model_fn: str
-) -> hdpgmm.HDPGMM:
-    """
-    """
-    with open(model_fn, 'rb') as fp:
-        model = pkl.load(fp)
-    return model
-
-
-def infer_documents(
-    model: hdpgmm.HDPGMM,
-    dataset: MVVarSeqData,
-    n_max_inner_update: int = 100,
-    e_step_tol: float = 1e-4
-) -> tuple[npt.ArrayLike,  # mean responsibility
-           npt.ArrayLike]: # mean likelihood
-    """
-    """
-    (
-        a, b, eq_pi, w, prior, lik
-    ) = hdpgmm.infer_documents(dataset, model,
-                               n_max_inner_update=n_max_inner_update,
-                               e_step_tol=e_step_tol)
-    return prior, lik
 
 
 def process_feature(

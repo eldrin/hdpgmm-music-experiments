@@ -12,28 +12,28 @@ from sklearn.preprocessing import StandardScaler
 
 from tqdm import tqdm
 
-from bibim.data import MVVarSeqData
-from bibim.hdp import gaussian as hdpgmm
+# from bibim.data import MVVarSeqData
+# from bibim.hdp import gaussian as hdpgmm
 # from musmtl.tool import FeatureExtractor
-
-from .utils import _slice
+from hdpgmm import model as hdpgmm
+from hdpgmm.data import HDFMultiVarSeqDataset
 
 
 class FeatureLearner:
     """
     """
-    def fit(self, data: MVVarSeqData):
+    def fit(self, data: HDFMultiVarSeqDataset):
         """
         """
         raise NotImplementedError()
 
-    def extract(self, data: MVVarSeqData):
+    def extract(self, data: HDFMultiVarSeqDataset):
         """
         """
         assert hasattr(self, '_model')
         return self._extract(data)
 
-    def _extract(self, data: MVVarSeqData):
+    def _extract(self, data: HDFMultiVarSeqDataset):
         """
         """
         raise NotImplementedError()
@@ -64,16 +64,19 @@ class HDPGMM(FeatureLearner):
         max_components_document: int,
         n_iters: int=100,
         share_alpha0: bool=False,
-        tau0: int=1,
-        kappa: float=.5,
+        tau0: int=64,
+        kappa: float=.6,
         full_uniform_init: bool=False,
         batch_size: int=128,
-        n_max_inner_update: int=100,
-        e_step_tol: float=1e-4,
-        n_jobs: int=4,
+        max_len: int=2600,
+        n_max_inner_update: int=1000,
+        e_step_tol: float=1e-6,
+        device: str='cpu',
         verbose: bool=True
     ):
         """
+        it's a simple wrapper class for `hdpgmm.model` module
+        for a convenience.
         """
         super().__init__()
         self.max_components_corpus = max_components_corpus
@@ -84,73 +87,56 @@ class HDPGMM(FeatureLearner):
         self.kappa = kappa
         self.full_uniform_init = full_uniform_init
         self.batch_size = batch_size
+        self.max_len = max_len
         self.n_max_inner_update = n_max_inner_update
         self.e_step_tol = e_step_tol
-        self.n_jobs = n_jobs
+        self.device = device
         self.verbose = verbose
 
-    def fit(self, data: MVVarSeqData):
+    def fit(self, data: HDFMultiVarSeqDataset):
         """
         """
         self._model = hdpgmm.variational_inference(
             max_components_corpus=self.max_components_corpus,
             max_components_document=self.max_components_document,
-            n_iters=self.n_iters,
+            n_epochs=self.n_iters,
             share_alpha0=self.share_alpha0,
             tau0=self.tau0,
             kappa=self.kappa,
             full_uniform_init=self.full_uniform_init,
             batch_size=self.batch_size,
-            n_max_inner_update=self.n_max_inner_update,
+            n_max_inner_iter=self.n_max_inner_update,
             e_step_tol=self.e_step_tol,
-            n_jobs=self.n_jobs,
+            max_len=self.max_len,
+            device=self.device,
             verbose=self.verbose
         )
 
     def _extract(
         self,
-        data: MVVarSeqData,
+        data: HDFMultiVarSeqDataset,
     ) -> npt.ArrayLike:
         """
         """
-        if self.batch_size <= 0:
-            # a_, b_, eq_pi, w_, prior_, lik_ = hdpgmm.infer_documents(
-            #     data, self._model,
-            #     n_max_inner_update=self.n_max_inner_update,
-            #     e_step_tol=self.e_step_tol, n_jobs = self.n_jobs
-            # )
-            lik_ = hdpgmm.infer_documents(
-                data, self._model,
-                n_max_inner_update=self.n_max_inner_update,
-                e_step_tol=self.e_step_tol, only_compute_lik=True,
-                n_jobs = self.n_jobs
-            )
-        else:
-            lik_ = []
-            rng = list(range(0, data.num_docs, self.batch_size))
-            with tqdm(total=len(rng), ncols=80, disable=not self.verbose) as prog:
-                for start in range(0, data.num_docs, self.batch_size):
-                    end = min(start + self.batch_size, data.num_docs)
-
-                    # slice the dataset
-                    minibatch = _slice(data, start, end)
-
-                    # _, _, _, _, prior_batch, lik_batch = hdpgmm.infer_documents(
-                    #     minibatch, self._model,
-                    #     n_max_inner_update=self.n_max_inner_update,
-                    #     e_step_tol=self.e_step_tol, n_jobs = self.n_jobs
-                    # )
-                    lik_batch = hdpgmm.infer_documents(
-                        minibatch, self._model,
-                        n_max_inner_update=self.n_max_inner_update,
-                        e_step_tol=self.e_step_tol, only_compute_lik=True,
-                        n_jobs = self.n_jobs
-                    )
-                    lik_.append(lik_batch)
-                    prog.update()
-            lik_ = np.concatenate(lik_, axis=0)
-
-        return lik_
+        features = hdpgmm.infer_documents(
+            data,
+            self._model,
+            n_max_inner_iter = self.n_max_inner_update,
+            e_step_tol = self.e_step_tol,
+            max_len = self.max_len,
+            batch_size = self.batch_size,
+            device = self.device
+        )
+        features = {
+            'prior': features['responsibility'].detach().cpu().numpy().astype('float64'),
+            'lik': (
+                (features['Eq_ln_eta']
+                 - torch.logsumexp(features['Eq_ln_eta'], dim=-1)[:, None]).exp()
+            ).detach().cpu().numpy(),
+            'eq_pi': features['Eq_ln_pi'].detach().cpu().exp().numpy(),
+            'w': features['w'].detach().cpu().numpy()
+        }
+        return features['lik']
 
     def save(self, path: str):
         """
@@ -170,8 +156,8 @@ class HDPGMM(FeatureLearner):
             _model = pkl.load(fp)
 
         model = cls(
-            _model.max_components_corpus,
-            _model.max_components_document,
+            _model.hdpgmm.max_components_corpus,
+            _model.hdpgmm.max_components_document,
         )
         model._model = _model
         return model
@@ -184,7 +170,7 @@ class HDPGMM(FeatureLearner):
             max_components_corpus = self.max_components_corpus,
             max_components_document = self.max_components_document,
             n_iters = len(
-                self._model.training_monitors['training_lowerbound']
+                self._model.hdpgmm.training_monitors['training_lowerbound']
             ),
         )
         return config
@@ -197,33 +183,38 @@ class VQCodebook(FeatureLearner):
         super().__init__()
         self.n_clusters = n_clusters
 
-    def fit(self, data: MVVarSeqData):
+    def fit(self, data: HDFMultiVarSeqDataset):
         """
         """
         self._model = Pipeline([('sclr', StandardScaler()),
                                 ('kms', MiniBatchKMeans(self.n_clusters))])
-        self._model.fit(data.data)
+        self._model.fit(data._hf['data'][:])
 
-    def _extract(self, data: MVVarSeqData) -> npt.ArrayLike:
+    def _extract(
+        self,
+        data: HDFMultiVarSeqDataset,
+        verbose: bool=False
+    ) -> npt.ArrayLike:
         """
         """
-        N = len(data.indptr) - 1
-        pi = np.zeros((N, self.n_clusters), dtype=data.dtype)
-        for j in range(N):
+        N = len(data)
+        pi = np.zeros((N, self.n_clusters), dtype=data._hf['data'].dtype)
+        with tqdm(total=N, ncols=80, disable=not verbose) as prog:
+            for j in range(N):
 
-            # slice the tokens for jth document
-            j0, j1 = data.indptr[j], data.indptr[j+1]
-            x = data.data[j0:j1]
+                # slice the tokens for jth document
+                x = data[j][1].detach().cpu().numpy()
 
-            # compute the relative frequency of corpus-level components k
-            # for given jth document.
-            freq = np.bincount(self._model.predict(x))
-            if len(freq) < self.n_clusters:
-                pi[j, :len(freq)] = freq
-            else:
-                pi[j] = freq
-            pi[j] /= pi[j].sum()
+                # compute the relative frequency of corpus-level components k
+                # for given jth document.
+                freq = np.bincount(self._model.predict(x))
+                if len(freq) < self.n_clusters:
+                    pi[j, :len(freq)] = freq
+                else:
+                    pi[j] = freq
+                pi[j] /= pi[j].sum()
 
+                prog.update()
         return pi
 
     def save(self, path: str):
@@ -263,7 +254,7 @@ class G1(FeatureLearner):
         assert covariance_type in {'diag', 'full'}
         self.covariance_type = covariance_type
 
-    def fit(self, data: MVVarSeqData):
+    def fit(self, data: HDFMultiVarSeqDataset):
         """
         it actually does not do the actual training
         the G1 models will be fitted when the testing data's given
@@ -272,30 +263,28 @@ class G1(FeatureLearner):
         self._model = GaussianMixture(n_components=1,
                                       covariance_type=self.covariance_type)
 
-    def _extract(self, data: MVVarSeqData) -> npt.ArrayLike:
+    def _extract(self, data: HDFMultiVarSeqDataset) -> npt.ArrayLike:
         """
         """
-        N = len(data.indptr) - 1
-        D = data.data.shape[-1]
+        N = len(data)
+        D = data._hf['data'].shape[-1]
         if self.covariance_type == 'diag':
-            feature = np.zeros((N, D), dtype=data.data.dtype)
+            feature = np.zeros((N, D), dtype=data._hf['data'].dtype)
         elif self.covariance_type == 'full':
-            feature = np.zeros((N, D * D), dtype=data.data.dtype)
+            feature = np.zeros((N, D * D), dtype=data._hf['data'].dtype)
         else:
             raise ValueError(f'{self.covariance_type} is not supported!')
 
-        for j in range(len(data.indptr) - 1):
+        for j in range(len(data)):
 
             # slice the tokens for jth document
-            j0, j1 = data.indptr[j], data.indptr[j+1]
-            x = data.data[j0:j1]
+            x = data[j][1].detach().cpu().numpy()
 
             # fit a single multivariate gaussian
             self._model.fit(x)
 
             feature[j] = np.c_[self._model.means_[0],
                                self._model.covariances_[0].ravel()]
-
         return feature
 
     def save(self, path: str):
@@ -385,11 +374,14 @@ class PreComputedFeature(FeatureLearner):
     each row of feature table will be matched to the given dataset's
     index order, so that it can be used for the further processes
     """
-    def _extract(self, data: MVVarSeqData):
+    def _extract(self, data: HDFMultiVarSeqDataset):
         """
         (if needed) re-order the features based on the given dataset
         """
-        indices = [self._model['id2row'][i] for i in data.ids]
+        indices = [
+            self._model['id2row'][i]
+            for i in data._hf['ids'][:].astype('U')
+        ]
         return self._model['feature'][indices]
 
     @classmethod
