@@ -52,6 +52,12 @@ def parse_arguments() -> argparse.ArgumentParser:
                         help="root directory where fitted model is stored")
     parser.add_argument("--split-path", type=str, default=None,
                         help="path where split info dataset")
+    parser.add_argument("--device", type=str, default='cpu',
+                        help=(
+                            "specify acceleration device. "
+                            "only relevant for `hdpgmm` model"
+                            " {i.e., 'cpu', 'cuda:0', 'cuda:1', ...}"
+                        ))
     parser.add_argument('-m', '--batch-size', type=int, default=1024,
                         help='number of samples per minibatch for feature extraction')
     parser.add_argument('-j', '--n-jobs', type=int, default=2,
@@ -72,7 +78,8 @@ def main():
     dataset = DATASET_MAP[args.dataset](args.dataset_path,
                                         args.split_path)
     model = load_model(args.model_path, args.model_class, dataset,
-                       batch_size = args.batch_size)
+                       batch_size = args.batch_size,
+                       device = args.device)
     config = model.get_config()
 
     X, y = process_feature(model, dataset,

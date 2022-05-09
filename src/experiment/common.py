@@ -180,6 +180,7 @@ def load_model(
     model_class: str,
     dataset: TestDataset,
     batch_size: int=32,
+    device: str='cpu'
 ) -> FeatureLearner:
     """
     """
@@ -187,6 +188,7 @@ def load_model(
 
     # modify dataset if model requires "whitening" of features
     if isinstance(model, HDPGMM):
+        model.device = device
         if model._model.whiten_params is not None:
             dataset.data._whitening_params = model._model.whiten_params
             dataset.data.whiten = True
