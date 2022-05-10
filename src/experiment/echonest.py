@@ -56,7 +56,7 @@ def _load_interaction(
 def load_echonest(
     h5_fn: str,
     *args, **kwargs
-) -> tuple[TestDataset, h5py.File]:
+) -> TestDataset:
     """
     """
     # load audio feature data
@@ -82,7 +82,7 @@ def load_echonest(
         / np.std(loudness_feat, axis=0)[None]
     )
 
-    # load target 
+    # load target
     users = [u.decode() for u in hf['interaction/userlist'][:]]
     items = [i.decode() for i in hf['interaction/itemlist'][:]]
     mat = sp.csr_matrix(
@@ -92,13 +92,13 @@ def load_echonest(
         shape=(len(users), len(items))
     )
 
-    # wrap the raw dataset into the 
+    # wrap the raw dataset into the
     dataset = HDFMultiVarSeqDataset(h5_fn)
 
     # wrap the data
     target = RecSysInteractionTarget(mat, users, items)
 
-    return TestDataset(dataset, loudness_feat, target), hf
+    return TestDataset(dataset, loudness_feat, target)
 
 
 def run_experiment(
@@ -117,7 +117,7 @@ def run_experiment(
 ) -> list[float]:
     """
     """
-    dataset, hf = load_echonest(lfm1k_h5_fn)
+    dataset = load_echonest(lfm1k_h5_fn)
     model = load_model(model_fn, model_class, dataset,
                        batch_size = batch_size)
     config = model.get_config()
@@ -134,7 +134,6 @@ def run_experiment(
                                       top_k=top_k)
             accs.append(np.mean(acc))
             prog.update()
-    hf.close()
 
     result = config.copy()
     result['task'] = 'echonest'

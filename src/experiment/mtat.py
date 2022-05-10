@@ -35,7 +35,7 @@ def load_mtat(
     h5_fn: str,
     split_fn: str,
     tag50: bool = True,
-) -> tuple[TestDataset, h5py.File]:
+) -> TestDataset:
     """
     """
     id2split = {}
@@ -103,13 +103,13 @@ def load_mtat(
     targets = targets[to_keep]
     assert targets.shape[0] == (n_samples - len(black_list))
 
-    # wrap the raw dataset into the 
+    # wrap the raw dataset into the
     dataset = HDFMultiVarSeqDataset(h5_fn)
 
     # build target
     target = MultLabelClfTarget(labels=idx2tags, label_map=targets)
 
-    return TestDataset(dataset, loudness_feat, target, splits), hf
+    return TestDataset(dataset, loudness_feat, target, splits)
 
 
 def run_experiment(
@@ -125,7 +125,7 @@ def run_experiment(
 ) -> list[float]:
     """
     """
-    dataset, hf = load_mtat(
+    dataset = load_mtat(
         mtat_fn,
         mtat_split_fn,
     )
@@ -143,7 +143,6 @@ def run_experiment(
             accs.append(acc)
             prog.update()
 
-    hf.close()
     result = config.copy()
     result['task'] = 'magnatagatune'
     result['performance'] = accs
