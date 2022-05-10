@@ -97,6 +97,7 @@ def load_mtat(
         idx2tags = [t for t, i in JORDI_TAG50]
     else:
         idx2tags = [t.decode() for t in annot['tags'][:]]
+    hf.close()
 
     black_list = set(black_list)
     to_keep = np.array([i for i in range(n_samples) if i not in black_list])

@@ -91,6 +91,7 @@ def load_echonest(
          hf['interaction/indptr'][:]),
         shape=(len(users), len(items))
     )
+    hf.close()
 
     # wrap the raw dataset into the
     dataset = HDFMultiVarSeqDataset(h5_fn)
