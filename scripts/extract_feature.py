@@ -70,6 +70,8 @@ def parse_arguments() -> argparse.ArgumentParser:
 
 def main():
     """
+    TODO: now the program hang with VQCodeBook instance
+          after the feature extraction is finished.
     """
     args = parse_arguments()
     if args.verbose:
@@ -93,6 +95,7 @@ def main():
              dataset=np.array(args.dataset),
              model_class=np.array(config['model_class']),
              model_filename=np.array(fn.name))
+    dataset.data._hf.close()  # is it really necessary?
 
 
 if __name__ == "__main__":

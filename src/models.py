@@ -205,6 +205,12 @@ class VQCodebook(FeatureLearner):
                 # slice the tokens for jth document
                 x = data[j][1].detach().cpu().numpy()
 
+                # if no observation is found, fill uniform and continue
+                if x.shape[0] == 0:
+                    pi[j] = pi.shape[1]**-1
+                    prog.update()
+                    continue
+
                 # compute the relative frequency of corpus-level components k
                 # for given jth document.
                 freq = np.bincount(self._model.predict(x))
