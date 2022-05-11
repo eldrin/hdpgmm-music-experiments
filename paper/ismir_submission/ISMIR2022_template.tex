@@ -114,7 +114,7 @@ Bayesian nonparametric models have been applied in various MIR tasks for previou
 
 In spite of the similar premises they propose, however, Bayesian nonparametric models have not yet gained as much attention as DL recieved. To our best knowledge, in particular, they have not been compared under similar experimental control within MIR context. As they promise quite similar high-level properties, it would worth to explore to what extent they compare.
 
-In this work, we assess the music representation learned from Bayesian nonparametric models by comparing them to the modern deep neural network models. In particular, we consider the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:journals/jmlr/WangPB11,DBLP:conf/ismir/YoshiiG09,doi:10.1198/016214506000000302} as our model of interest. The comparison can confirm the potential of Bayesian nonparametric models as a representation learner over the DL methods.
+The research goal of this work is to assess the music representation learned from Bayesian nonparametric models by comparing them to the modern deep neural network models. In particular, we consider the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:journals/jmlr/WangPB11,DBLP:conf/ismir/YoshiiG09,doi:10.1198/016214506000000302} as our model of interest. The comparison can confirm the potential of Bayesian nonparametric models as a representation learner over the DL methods.
 To conretize the comparison, we employ the transfer learning experimental framework
 ~\cite{DBLP:journals/nca/KimULH20, DBLP:conf/ismir/ChoiFSC17, DBLP:conf/ismir/DielemanBS11}, which is commonly used for assessing the potential of representation itself. The contribution of this work can be listed as follows:
 
@@ -327,20 +327,12 @@ $\eta_{t}$ is the regularization coefficient that determines the extent uniform 
 
 In this section, we discuss the details of the empirical experiment we conduct. The overall design is adopted from the recent music representation learning studies~\cite{DBLP:conf/ismir/ChoiFSC17,DBLP:journals/nca/KimULH20,DBLP:conf/ismir/SpijkervetB21}, where multiple downstream music machine learning tasks are tested with the feature set learned from the representation models.
 
-\subsection{Datasets}\label{sec:experimental_setup:datasets}
+\subsection{Datasets \& Evaluation}\label{sec:experimental_setup:datasets_evaluation}
 
-We used the subset of Million Song Dataset (MSD)~\cite{Bertin-Mahieux2011} as the ``source'' dataset for the representation learning (i.e., inference for HDPGMM). Specifically, we used the preview music excerpts from the ``train'' subset of MSD introduced by~\cite{DBLP:conf/ismir/PonsNPSES18,app8010150}\footnote{Length of preview audio differs per clips, where about 70\% of samples are approximately 30 seconds and rest are 1 minute, with a small subset is longer than 1 minute.}.
-For the evaluation of the representation, we employ three target (downstream) tasks encompassing \emph{music genre classification}, \emph{music auto tagging}, \emph{music recommendation}. For each target task, we chose the GTZAN dataset~\cite{DBLP:journals/taslp/TzanetakisC02} with the fault-filtered split~\cite{DBLP:journals/tmm/KereliukSL15}, MagnaTagaTune (MTAT) dataset~\cite{DBLP:conf/ismir/LawWMBD09} with the split from ~\cite{lee_multi-level_2017}, and finally the Echo Nest taste profile subset as part of MSD~\cite{Bertin-Mahieux2011} filtered by user and item frequency~\cite{DBLP:conf/www/LiangKHJ18} for the genre classification, auto-tagging and recommendation, respectively.
+We used the subset of Million Song Dataset (\textbf{MSD})~\cite{Bertin-Mahieux2011} as the ``source'' dataset for the representation learning (i.e., inference for HDPGMM). Specifically, we used the preview music excerpts from the ``train'' subset of MSD introduced by~\cite{DBLP:conf/ismir/PonsNPSES18,app8010150}\footnote{Length of preview audio differs per clips, where about 70\% of samples are approximately 30 seconds and rest are 1 minute, with a small subset is longer than 1 minute.}.
+For the evaluation of the representation, we employ three target (downstream) tasks encompassing \emph{music genre classification}, \emph{music auto tagging}, \emph{music recommendation}. For each target task, we chose the \textbf{GTZAN} dataset~\cite{DBLP:journals/taslp/TzanetakisC02} with the fault-filtered split~\cite{DBLP:journals/tmm/KereliukSL15}, MagnaTagaTune (\textbf{MTAT}) dataset~\cite{DBLP:conf/ismir/LawWMBD09} with the split from ~\cite{lee_multi-level_2017}, and finally the Echo Nest taste profile subset as part of MSD (\textbf{Echonest})~\cite{Bertin-Mahieux2011} filtered by user and item frequency~\cite{DBLP:conf/www/LiangKHJ18} for the genre classification, auto-tagging and recommendation, respectively.
 
-% \begin{itemize}[noitemsep, leftmargin=*]
-%     \setlength\itemsep{0em}
-%     % \item \textbf{MSD} something something something something something something
-%     \item \textbf{GTZAN~\cite{DBLP:journals/taslp/TzanetakisC02}} provides $1,000$ songs equally partitioned by $10$ genres. We used the fault-filtered split introduced in \cite{DBLP:journals/tmm/KereliukSL15} and measured \emph{f1 score} averaged over genres for measuring the performance.
-%     \item \textbf{MTAT} includes $25,863$ music clips from $5,223$ unique songs and annotated with music tags. The tag set contains $188$ music tags in total, where we employed the top $50$ tags and the data split from~\cite{lee_multi-level_2017}
-%     \item \textbf{Echonest} 
-% \end{itemize}
-
-The details on datasets can be found in Table~\ref{tab:dataset}.
+The evaluation is done by the cross-validation of task-specific prediction models. We fit the logistic regression models for GTZAN and MTAT dataset which takes learned music represetnation as input and predicts the genre or music tags respectively. As for the recommendation, we apply the item K Nearest Neighbor (\emph{item-kNN}) method~\cite{DBLP:journals/tois/DeshpandeK04} where the song-song similarity is measured by the cosine distance of the learned music representation. The accuracy performance of each target task is assessed by commonly used accuracy measure in each task, which are further elaborated in Table~\ref{tab:dataset}.
 
 \begin{table}[h!]
 \centering
@@ -352,25 +344,39 @@ The details on datasets can be found in Table~\ref{tab:dataset}.
     MSD      & $213,354$ & N/A           & N/A          \\ 
     \hline
     GTZAN    & $1,000$   & $10$          & F1~\cite{DBLP:books/bu/Rijsbergen79} \\
-    MTAT     & $25,863$  & $50$          & ROC-AUC~\cite{DBLP:journals/prl/Fawcett06} \\
-    Echonest & $40,980$  & $571,355$\tablefootnote{It refers the number of users in this dataset.} & NDCG~\cite{DBLP:journals/tois/JarvelinK02} \\
+    MTAT     & $25,863$  & $50$          & AUROC~\cite{DBLP:journals/prl/Fawcett06} \\
+    Echonest\tablefootnote{We follow the train / test split method introduced in \cite{DBLP:conf/www/LiangKHJ18}} & $40,980$  & $571,355$\tablefootnote{It refers the number of users in this dataset.} & nDCG~\cite{DBLP:journals/tois/JarvelinK02} \\
     \hline
 \end{tabular}
-\caption{Details on dataset used. We use \emph{macro} average strategy for F1 and ROC-AUC measure, and we consider top $500$ recommendationed songs for computing NDCG.}
+\caption{Details on dataset used. We use \emph{macro} average strategy for F1 and Area Under Receiver Operating Characteristic curve (AUROC) measure, and we consider top $500$ recommendationed songs for computing the normalized Discounted Cumulative Gain (nDCG).}
 \label{tab:dataset}
 \end{table}
 
+\subsection{Base Audio Feature}\label{sec:experimental_setup:feature}
 
-
-\subsection{Audio Feature}\label{sec:experimental_setup:feature}
 
 \subsection{Comparisons}\label{sec:experimental_setup:comparisons}
 
-\subsubsection{G1}\label{sec:experimental_setup:comparisons:g1}
-\subsubsection{VQ Codebook}\label{sec:experimental_setup:comparisons:vq}
-\subsubsection{Kim}\label{sec:experimental_setup:comparisons:kim}
-\subsubsection{CMLR}\label{sec:experimental_setup:comparisons:clmr}
-\subsubsection{HDPGMM}\label{sec:experimental_setup:comparisons:hdpgmm}
+We evaluate $4$ comparisons against HDPGMM, which includes both DL based models and non-DL based models.
+
+\begin{itemize}[noitemsep, leftmargin=*]
+    \item \emph{\textbf{G1}} is the simplist model among the comparison. The song-wise feature is represented by the concatenated parameters $\phi = \{\mu, \Sigma\}$ of the single multivariate Gaussian fitted on the frame-level base audio feature vectors within a song\footnote{We chose the diagonalized covariance, which means the feature is concatenation of \emph{mean} and \emph{standard deviation} of features.}.
+
+    \item \emph{\textbf{VQ Codebook}} can be deemed as the simple approximation of HDPGMM models~\cite{DBLP:conf/ismir/HoffmanBC08}. First a corpus-wise $K$ means clustering model is fitted on the song features in the frame-level. Later song-level feature is represented by the normalized frequency of cluster assignment of each frame-level base audio feature vector within the song. It can be interpreted similarly to the inferred cluster assignment variable $\pi_{j}$ in Eq. (\ref{eq:hdpmm}). As the number of corpus level cluster $K$ is a free parameter, we assess in total four variants $K \in \{32, 64, 128, 256\}$ to provide a comprehensive overview.
+
+    \item \emph{\textbf{KIM}} is a DL model that is trained in a simple self-supervised learning framework. The loss function is calculated by the 
+
+    \item \emph{\textbf{CLMR}}
+
+    \item \emph{\textbf{HDPGMM}}
+
+\end{itemize}
+
+% \subsubsection{G1}\label{sec:experimental_setup:comparisons:g1}
+% \subsubsection{VQ Codebook}\label{sec:experimental_setup:comparisons:vq}
+% \subsubsection{Kim}\label{sec:experimental_setup:comparisons:kim}
+% \subsubsection{CMLR}\label{sec:experimental_setup:comparisons:clmr}
+% \subsubsection{HDPGMM}\label{sec:experimental_setup:comparisons:hdpgmm}
 
 \subsection{Hyper Parameters}\label{sec:experimental_setup:hyperparams}
 
