@@ -23,6 +23,7 @@
 \usepackage{color}
 \usepackage{multirow}
 \usepackage{enumitem}
+\usepackage{tablefootnote}
 
 
 \usepackage{lineno}
@@ -328,39 +329,36 @@ In this section, we discuss the details of the empirical experiment we conduct. 
 
 \subsection{Datasets}\label{sec:experimental_setup:datasets}
 
-We used the subset of Million Song Dataset (MSD)~\cite{Bertin-Mahieux2011} as the ``source'' dataset for the representation learning (i.e., inference for HDPGMM). Specifically, we used the preview audio of the ``train'' subset introduced by~\cite{DBLP:conf/ismir/PonsNPSES18,app8010150}\footnote{Length of preview audio differs per clips, where about 70\% of samples are approximately 30 seconds and rest are 1 minute, with a small subset is longer than 1 minute.}. For the evaluation of the representation, we employ three target (downstream) tasks encompassing \emph{music genre classification, music auto tagging, music recommendation}. For each task, we use the GTZAN dataset~\cite{DBLP:journals/taslp/TzanetakisC02} with the fault-filtered split~\cite{DBLP:journals/tmm/KereliukSL15}, MagnaTagaTune (MTAT) dataset~\cite{DBLP:conf/ismir/LawWMBD09} with the split from ~\cite{lee_multi-level_2017}, and finally the Echo Nest taste profile subset as part of MSD~\cite{Bertin-Mahieux2011} filtered by user and item frequency~\cite{DBLP:conf/www/LiangKHJ18} for the genre classification, auto-tagging and recommendation, respectively.
-\begin{itemize}[noitemsep, leftmargin=*]
-    \setlength\itemsep{0em}
-    \item \textbf{MSD} something something something something something something
-    \item \textbf{GTZAN} something something something something something something
-    \item \textbf{MTAT} something something something something something something
-    \item \textbf{Echonest} something something something something something something
-\end{itemize}
+We used the subset of Million Song Dataset (MSD)~\cite{Bertin-Mahieux2011} as the ``source'' dataset for the representation learning (i.e., inference for HDPGMM). Specifically, we used the preview music excerpts from the ``train'' subset of MSD introduced by~\cite{DBLP:conf/ismir/PonsNPSES18,app8010150}\footnote{Length of preview audio differs per clips, where about 70\% of samples are approximately 30 seconds and rest are 1 minute, with a small subset is longer than 1 minute.}.
+For the evaluation of the representation, we employ three target (downstream) tasks encompassing \emph{music genre classification}, \emph{music auto tagging}, \emph{music recommendation}. For each target task, we chose the GTZAN dataset~\cite{DBLP:journals/taslp/TzanetakisC02} with the fault-filtered split~\cite{DBLP:journals/tmm/KereliukSL15}, MagnaTagaTune (MTAT) dataset~\cite{DBLP:conf/ismir/LawWMBD09} with the split from ~\cite{lee_multi-level_2017}, and finally the Echo Nest taste profile subset as part of MSD~\cite{Bertin-Mahieux2011} filtered by user and item frequency~\cite{DBLP:conf/www/LiangKHJ18} for the genre classification, auto-tagging and recommendation, respectively.
 
-% \subsubsection{MSD}\label{sec:experimental_setup:datasets:msd}
-% \subsubsection{GTZAN}\label{sec:experimental_setup:datasets:gtzan}
-% \subsubsection{MTAT}\label{sec:experimental_setup:datasets:mtat}
-% \subsubsection{Echonest}\label{sec:experimental_setup:datasets:echonest}
+% \begin{itemize}[noitemsep, leftmargin=*]
+%     \setlength\itemsep{0em}
+%     % \item \textbf{MSD} something something something something something something
+%     \item \textbf{GTZAN~\cite{DBLP:journals/taslp/TzanetakisC02}} provides $1,000$ songs equally partitioned by $10$ genres. We used the fault-filtered split introduced in \cite{DBLP:journals/tmm/KereliukSL15} and measured \emph{f1 score} averaged over genres for measuring the performance.
+%     \item \textbf{MTAT} includes $25,863$ music clips from $5,223$ unique songs and annotated with music tags. The tag set contains $188$ music tags in total, where we employed the top $50$ tags and the data split from~\cite{lee_multi-level_2017}
+%     \item \textbf{Echonest} 
+% \end{itemize}
 
-% The details on datasets can be found in Table~\ref{tab:dataset}.
-% 
-% \begin{table}[h!]
-% \centering
-% \begin{tabular}{ cccc }
-%     \hline
-%                             & Id       & \# samples & \# classes / \# users \\
-%     \hline
-%     \hline
-%     Source                  & MSD      & $200,000$ & N/A                    \\
-%     \hline
-%     \multirow{3}{*}{Target} & GTZAN    & $1,000$   & $10$                   \\
-%                             & MTAT     & $25,000$  & $50$                   \\
-%                             & Echonest & $40,000$  & $1000,000$             \\
-%     \hline
-% \end{tabular}
-% \caption{Details on dataset used.}
-% \label{tab:dataset}
-% \end{table}
+The details on datasets can be found in Table~\ref{tab:dataset}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ cccc }
+    \hline
+    Id       & \# Samples & \# Classes   & Acc. Measure \\ 
+    \hline
+    \hline 
+    MSD      & $213,354$ & N/A           & N/A          \\ 
+    \hline
+    GTZAN    & $1,000$   & $10$          & F1~\cite{DBLP:books/bu/Rijsbergen79} \\
+    MTAT     & $25,863$  & $50$          & ROC-AUC~\cite{DBLP:journals/prl/Fawcett06} \\
+    Echonest & $40,980$  & $571,355$\tablefootnote{It refers the number of users in this dataset.} & NDCG~\cite{DBLP:journals/tois/JarvelinK02} \\
+    \hline
+\end{tabular}
+\caption{Details on dataset used. We use \emph{macro} average strategy for F1 and ROC-AUC measure, and we consider top $500$ recommendationed songs for computing NDCG.}
+\label{tab:dataset}
+\end{table}
 
 
 
