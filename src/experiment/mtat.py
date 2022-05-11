@@ -66,6 +66,7 @@ def load_mtat(
         j0, j1 = indptr[j], indptr[j+1]
         if j1 == j0 or id_j not in id2split:
             black_list.append(j)
+            splits.append('bad')
             print(f'[Warning] no frame found for {j:d}th sample!')
             continue
 
@@ -99,10 +100,10 @@ def load_mtat(
         idx2tags = [t.decode() for t in annot['tags'][:]]
     hf.close()
 
-    black_list = set(black_list)
-    to_keep = np.array([i for i in range(n_samples) if i not in black_list])
-    targets = targets[to_keep]
-    assert targets.shape[0] == (n_samples - len(black_list))
+    # black_list = set(black_list)
+    # to_keep = np.array([i for i in range(n_samples) if i not in black_list])
+    # targets = targets[to_keep]
+    # assert targets.shape[0] == (n_samples - len(black_list))
 
     # wrap the raw dataset into the
     dataset = HDFMultiVarSeqDataset(h5_fn)

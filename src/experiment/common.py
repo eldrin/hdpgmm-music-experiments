@@ -320,9 +320,18 @@ def classification_test(
 
     # process feature
     X, y = process_feature(model, dataset)
+    print(X.shape, y.shape, dataset.splits.shape)
 
     # initialize model
     if isinstance(dataset.target, MultLabelClfTarget):
+        # TODO: this quick fix should be handled in upper level later
+        # good_entries = np.where(y.getnnz(1) > 0)[0]
+        good_entries = np.where(dataset.splits != 'bad')[0]
+        X = X[good_entries]
+        y = y[good_entries]
+        dataset.splits = dataset.splits[good_entries]
+        print(X.shape, y.shape, dataset.splits.shape)
+
         est = Pipeline([('z_score', StandardScaler()),
                         ('lr', LitSKLogisticRegression(accelerator=accelerator,
                                                        loss='bin_xent',

@@ -396,11 +396,7 @@ class PreComputedFeature(FeatureLearner):
         """
         mdl = cls()
         with np.load(path, allow_pickle=True) as npf:
-            if npf['ids'].dtype == 'O':
-                ids = npf['ids'].astype('U')
-            else:
-                ids = npf['ids']
-
+            ids = npf['ids'].astype('U')
             mdl._model = {
                 'feature': npf['feature'],
                 'ids': ids,
