@@ -84,7 +84,8 @@
 \maketitle
 %
 \begin{abstract}
-The abstract should be placed at the top left column and should contain about 150-200 words.
+    In the previous decade, deep learning has proven to be one of the most effective machine learning methods to tackle a wide range of Music Information Retrieval (MIR) tasks. It offers the highly expressive learning capacity that can fit any music representations in need for the downstream tasks, which sacrifices interpretability. On the other hand, the Bayesian nonparametric approach promises similar properties, such as high flexibility while being robust to the overfitting at the same time. The primary motivation of this work is to explore the potential of Bayesian nonparametric models in MIR tasks by focusing on the representation learning aspect especially compared to the Deep learning models. We assess the music representation learned from the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM), an infinite mixture model based on the Bayesian nonparametric approach, to MIR tasks including classifications, auto-tagging, and recommendation.
+\textcolor{red}{Jaehun:I'm not sure we can include some hints for the result until the abstract deadline...}
 \end{abstract}
 %
 \section{Introduction}\label{sec:introduction}
@@ -112,14 +113,14 @@ The Bayesian nonparametric approach is an alternative approach to achieve what D
 
 Bayesian nonparametric models have been applied in various MIR tasks for previous decades. As latent representation of music audio, it was applied to esitimate music (self) similarity~\cite{DBLP:conf/icassp/QiPC07, DBLP:conf/ismir/HoffmanBC08}. It also was employed to conduct harmonic and spectral analyses by decomposing the time-frequency representation of the music audio into the mixture of infinite latent components~\cite{Hoffman09findinglatent, DBLP:conf/icassp/NakanoRKOS11}. These analyses also have shown to be useful for downstream tasks such as the structural analysis~\cite{DBLP:conf/icassp/NakanoOKMK12} or music recommentation~\cite{DBLP:conf/ismir/YoshiiG09}. Further, discriminative model based on the Bayesian nonparametric is developed for the music emotion recognition~\cite{DBLP:journals/taffco/WangLCCH15}.
 
-In spite of the similar premises they propose, however, Bayesian nonparametric models have not yet gained as much attention as DL recieved. To our best knowledge, in particular, they have not been compared under similar experimental control within MIR context. As they promise quite similar high-level properties, it would worth to explore to what extent they compare.
+In spite of the similar premises they propose, however, Bayesian nonparametric models have not yet gained as much attention as DL recieved in MIR field. To our best knowledge, in particular, they have not been compared under similar experimental control within MIR context. As they promise quite similar high-level properties, it would be worth to explore to what extent they compare.
 
 The research goal of this work is to assess the music representation learned from Bayesian nonparametric models by comparing them to the modern deep neural network models. In particular, we consider the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:journals/jmlr/WangPB11,DBLP:conf/ismir/YoshiiG09,doi:10.1198/016214506000000302} as our model of interest. The comparison can confirm the potential of Bayesian nonparametric models as a representation learner over the DL methods.
-To conretize the comparison, we employ the transfer learning experimental framework
+To concretize the comparison, we employ the transfer learning experimental framework
 ~\cite{DBLP:journals/nca/KimULH20, DBLP:conf/ismir/ChoiFSC17, DBLP:conf/ismir/DielemanBS11}, which is commonly used for assessing the potential of representation itself. The contribution of this work can be listed as follows:
 
 \begin{enumerate}
-    \item We explore and suggest insight how ``good'' the music representation learned by Bayesian nonparametric models is.
+    \item We explore and suggest insight how ``good'' the music representation learned by Bayesian nonparametric models is under a range MIR tasks.
     \item We provide an efficient, GPU accelerated inference algorithm for HDPGMM, which can handle relatively scaled data.
 \end{enumerate}
 
@@ -354,6 +355,25 @@ The evaluation is done by the cross-validation of task-specific prediction model
 
 \subsection{Base Audio Feature}\label{sec:experimental_setup:feature}
 
+We select a set of audio features to infer the HDPGMM and non-DL baseline models inspired by~\cite{DBLP:journals/taffco/WangLCCH15}. The detailed curation of the features can be found in Table ~\ref{tab:feature}\footnote{We use the implementation of \texttt{librosa}~\cite{librosa_0_9_1} for all the features.}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ cccc }
+    \hline
+    Feature       & Aspect   & Dim.   & Transform\\ 
+    \hline
+    \hline 
+    MFCC & Timbre & 13 & -         \\ 
+    $\Delta$MFCC & Timbre & 13 & -         \\ 
+    $\Delta\Delta$MFCC & Timbre & 13 & -         \\ 
+    Onset Strength\cite{88} & Rhythm & 1 & $\text{log}$  \\ 
+    Chroma\cite{ellis_2007} & Tonal & 12 & $\text{log}$  \\ 
+    \hline
+\end{tabular}
+\caption{Details on the base audio features we employed for the experiment.}
+\label{tab:feature}
+\end{table}
 
 \subsection{Comparisons}\label{sec:experimental_setup:comparisons}
 
@@ -366,10 +386,9 @@ We evaluate $4$ comparisons against HDPGMM, which includes both DL based models 
 
     \item \emph{\textbf{KIM}} is a DL based music representation trained in a simple self-supervised learning framework~\cite{DBLP:journals/nca/KimULH20}. The objective function of the model is to measure the extent which a siamenese neural network~\cite{koch2015siamese} can predict whether the two song clips it takes are cropped from the same song or different songs. We use the original implementation of the work, which takes the stereo mel-spectrogram as input.
 
-    \item \emph{\textbf{CLMR}}~\cite{DBLP:conf/ismir/SpijkervetB21} is recent DL based music representation employing the contrastive learning method from~\cite{DBLP:conf/icml/ChenK0H20}. We employed the original implementation of~\cite{DBLP:conf/ismir/SpijkervetB21} that uses the raw audio samples as input feature. For both DL based models, music representation is extracted from the part of network excluding the decision function stage.
+    \item \emph{\textbf{CLMR}}~\cite{DBLP:conf/ismir/SpijkervetB21} is recent DL based music representation employing the self-supervised learning through the contrastive learning method~\cite{DBLP:conf/icml/ChenK0H20}. We employed the original implementation of~\cite{DBLP:conf/ismir/SpijkervetB21} that uses the raw audio samples as input feature\footnote{Unlike the original work, we do not apply the data augmentation for a fair comparison and also as it is beyond the main scope of the work. However, as it is reported that it can meaningfully improve the representation, we assume that applying the method would benefit similarly to other models as well.}. For both DL based models, music representation is extracted from the last hidden layer just before the layer for the prediction.
 
-    \item \emph{\textbf{HDPGMM}}
-
+    \item \emph{\textbf{HDPGMM}}\footnote{inference algorithm in \cref{alg:inference} is implemented on \texttt{PyTorch}~\cite{NEURIPS2019_9015}, and thus support GPU acceleration.} uses the base audio feature similar to \emph{G1} and \emph{VQ Codebook}. As for song-level representation $y_{j}$, we employ the expectation $\tilde{y}_{jk} = \mathbb{E}_{q}[\text{log}\,p(X_{j}|c_{j}, z_{j}, \phi_{k})]$ and normalize them over components and the length of the clip $y_{jk} = N_{j}^{-1}\frac{\tilde{y}_{jk}}{\sum_{k^{\prime}=1}^{K}\tilde{y}_{jk^{\prime}}}$. We adopt most of the hyper-parameter setup found from previous work~\cite{DBLP:journals/jmlr/WangPB11}. We, however, explore the regularization rate $\eta_{0} \in \{10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}\}$ and total corpus size $|X| \in \{2\times10^{3}, 2\times10^{4}, 213354\}$ to examine their effect on the representation.
 \end{itemize}
 
 
