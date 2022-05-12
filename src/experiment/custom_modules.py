@@ -53,14 +53,15 @@ class LitLogisticRegression(pl.LightningModule):
             self._nonlin = torch.sigmoid
             self._acc_metric = (
                 lambda x, y:
-                    auroc(torch.sigmoid(x), y,
+                    auroc(torch.logsigmoid(x), y,
                           average=auroc_avg,
                           num_classes=self.hparams.num_classes)
             )
             self._loss_fn = (
                 lambda x, y, reduction:
-                    F.binary_cross_entropy(torch.sigmoid(x), y,
-                                           reduction=reduction)
+                    F.binary_cross_entropy_with_logits(
+                        x, y, reduction=reduction
+                    )
             )
 
         elif self.hparams.loss == 'multinomial':
@@ -256,7 +257,7 @@ class LitSKLogisticRegression(BaseEstimator, ClassifierMixin):
         y_hat = self.logreg_._model(X)
         y_hat = F.logsigmoid(y_hat)
 
-        return y_hat.detach().numpy()
+        return y_hat.detach().cpu().numpy()
 
     def predict(self, X):
         """

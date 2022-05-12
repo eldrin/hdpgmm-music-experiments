@@ -254,6 +254,9 @@ def _macro_aucroc_scoring_safe(model, x_test, y_test):
     """
     """
     y_hat = model.predict_log_proba(x_test)
+    if np.isnan(y_hat).sum() > 0:
+        return -1e+3
+
     good_cols = y_test.sum(0) > 0
     return roc_auc_score(y_test[:, good_cols],
                          y_hat[:, good_cols],
@@ -264,6 +267,9 @@ def _macro_average_precision_scoring_safe(model, x_test, y_test):
     """
     """
     y_hat = model.predict_log_proba(x_test)
+    if np.isnan(y_hat).sum() > 0:
+        return -1e+3
+
     good_cols = y_test.sum(0) > 0
     return average_precision_score(y_test[:, good_cols],
                                    y_hat[:, good_cols],
@@ -274,6 +280,9 @@ def _accuracy_scoring(model, x_test, y_test):
     """
     """
     y_pred = model.predict(x_test)
+    if np.isnan(y_hat).sum() > 0:
+        return -1e+3
+
     return accuracy_score(y_test, y_pred)
 
 
@@ -281,6 +290,9 @@ def _macro_f1_scoring(model, x_test, y_test):
     """
     """
     y_pred = model.predict(x_test)
+    if np.isnan(y_hat).sum() > 0:
+        return -1e+3
+
     return f1_score(y_test, y_pred, average='macro')
 
 
@@ -320,7 +332,6 @@ def classification_test(
 
     # process feature
     X, y = process_feature(model, dataset)
-    print(X.shape, y.shape, dataset.splits.shape)
 
     # initialize model
     if isinstance(dataset.target, MultLabelClfTarget):
@@ -329,8 +340,7 @@ def classification_test(
         good_entries = np.where(dataset.splits != 'bad')[0]
         X = X[good_entries]
         y = y[good_entries]
-        dataset.splits = dataset.splits[good_entries]
-        print(X.shape, y.shape, dataset.splits.shape)
+        splits = dataset.splits[good_entries].copy()
 
         est = Pipeline([('z_score', StandardScaler()),
                         ('lr', LitSKLogisticRegression(accelerator=accelerator,
@@ -346,6 +356,7 @@ def classification_test(
         #             lr__max_iter=[250, 500, 1000, 2000])
 
     elif isinstance(dataset.target, MultClassClfTarget):
+        splits = data.splits.copy()
         est = Pipeline([('z_score', StandardScaler()),
                         ('lr', LogisticRegression(max_iter=20000))])
         dist = dict(lr__C=loguniform(1e-3, 1e+3))
@@ -356,10 +367,10 @@ def classification_test(
 
     # setup learning / testing
     accs = []
-    if dataset.splits is not None:
-        train_ix = np.where(dataset.splits == 'train')[0]
-        valid_ix = np.where(dataset.splits == 'valid')[0]
-        test_ix = np.where(dataset.splits == 'test')[0]
+    if splits is not None:
+        train_ix = np.where(splits == 'train')[0]
+        valid_ix = np.where(splits == 'valid')[0]
+        test_ix = np.where(splits == 'test')[0]
         train_valid_idx = np.r_[train_ix, valid_ix]
         train_bound = len(train_ix)
         cv_ = ((np.arange(train_bound),
