@@ -674,7 +674,7 @@ def recommendation_test(
     test_user_ratio: float = 0.1,
     k_range: list[int] = [16, 32, 64, 128, 256, 512],
     n_splits: int = 5,
-    sample_user: Optional[Union[float, int]] = 200,
+    sample_user: Optional[Union[float, int]] = None,
     similarity: str = 'cosine',
     device: str = 'cpu'
 ) -> list[float]:

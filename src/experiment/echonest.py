@@ -132,6 +132,7 @@ def run_experiment(
                                       device=device,
                                       valid_user_ratio=valid_user_ratio,
                                       test_user_ratio=test_user_ratio,
+                                      sample_user=batch_size,
                                       top_k=top_k)
             accs.append(np.mean(acc))
             prog.update()
