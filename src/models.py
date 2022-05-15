@@ -386,6 +386,8 @@ class PreComputedFeature(FeatureLearner):
         """
         indices = [
             self._model['id2row'][i]
+            if i in self._model['id2row'] else
+            self._model['id2row'][np.random.choice(self._model['ids'])]
             for i in data._hf['ids'][:].astype('U')
         ]
         return self._model['feature'][indices]
