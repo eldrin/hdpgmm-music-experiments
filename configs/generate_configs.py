@@ -180,6 +180,24 @@ for i in range(5):
     configs.append(tmp_)
 
 
+# : short max length test
+tmp_ = copy.deepcopy(default)
+tmp_['model']['base_noise_ratio'] = 1e-1
+cur_prefix = tmp_['model']['prefix']
+tmp_['model']['prefix'] = f'{cur_prefix}{len(configs):d}'
+tmp_['model']['max_len'] = 111  # corresponding to 2.677s with librosa default sr/nfft/hopsz
+configs.append(tmp_)
+
+# : K=512 test with batch_size=256
+tmp_ = copy.deepcopy(default)
+tmp_['model']['base_noise_ratio'] = 1e-1
+tmp_['model']['max_components_corpus'] = 512
+tmp_['model']['batch_size'] = 256
+cur_prefix = tmp_['model']['prefix']
+tmp_['model']['prefix'] = f'{cur_prefix}{len(configs):d}'
+configs.append(tmp_)
+
+
 #############
 # save files
 #############
