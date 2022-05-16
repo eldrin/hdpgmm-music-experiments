@@ -241,7 +241,7 @@ Each variational distributions further factorize as follows:
     q(z) &= \textstyle \prod\nolimits_{j}\prod\nolimits_{n}\text{Mult}(z_{jn}|\zeta_{jn}) \\
 \end{aligned}
 \end{equation}
-where $u_{k}, v_{k}, a_{t}, b_{t}$ denote the variational parameters for the Beta distributions for corpus-level and document-level stick proportions, respectively. $\varphi_{jt}\in\mathbb{R}^{K}, \zeta_{jn}\in\mathbb{R}^{T}$ are the variational parameters for the Multinomial distribution to draw the selector $c$ and $z$.
+where $u_{k}, v_{k}, a_{t}, b_{t}$ denote the variational parameters for the Beta distributions for corpus-level and group-level stick proportions, respectively. $\varphi_{jt}\in\mathbb{R}^{K}, \zeta_{jn}\in\mathbb{R}^{T}$ are the variational parameters for the Multinomial distribution to draw the selector $c$ and $z$.
 
 Notably, we truncate the inifinite Beta distributions by $K$ and $T$, which is a common method for applying VI on the infinite mixture model. With sufficiently large number for the truncation, the model will still not be limited to the truncation, and will only use the number of components that suits for given dataset. Final variational distribution is the Gaussian-Wishart prior distribution which draws the Gaussian parameters $\phi = \{\mu, \Lambda\}$ for distribution $F$:
 \begin{equation}\label{eq:meanfield_normalwishart}
@@ -392,10 +392,9 @@ We evaluate $4$ comparisons against HDPGMM, which includes both DL based models 
 
     \item \textbf{CLMR}~\cite{DBLP:conf/ismir/SpijkervetB21} is recent DL based music representation employing the self-supervised learning through the contrastive learning method~\cite{DBLP:conf/icml/ChenK0H20}. We employed the original implementation of~\cite{DBLP:conf/ismir/SpijkervetB21} that uses the raw audio samples as input feature\footnote{Unlike the original work, we do not apply the data augmentation for a fair comparison and also as it is beyond the main scope of the work. However, as it is reported that it can meaningfully improve the representation, we assume that applying the method would benefit similarly to other models as well.}. The representation is drawn from the last hidden layer and pooled with global average over the entire song excerpt.
 
-    \item \textbf{HDPGMM}\footnote{inference algorithm in \cref{alg:inference} is implemented on \texttt{PyTorch}~\cite{NEURIPS2019_9015}, and thus support GPU acceleration.} uses the base audio feature with the whitening following~\cite{DBLP:conf/ismir/NamHSS12}. As for song-level representation $y_{j}$, we employ the expectation $\tilde{y}_{jk} = \mathbb{E}_{q}[\text{log}\,p(X_{j}|c_{j}, z_{j}, \phi_{k})]$ and normalize them over components and the length of the clip $y_{jk} = N_{j}^{-1}\frac{\tilde{y}_{jk}}{\sum_{k^{\prime}=1}^{K}\tilde{y}_{jk^{\prime}}}$. We adopt most of the hyper-parameter setup found from previous work~\cite{DBLP:journals/jmlr/WangPB11}; we set the maximum number of components on the corpus level $K$ and the document level $T$ as $256$ and $32$ respectively, mini-batch size to $1024$ and set learning rate parameters $\kappa=0.6$ and $\tau_{0}=64$. We, however, explore the regularization rate $\eta_{0} \in \{10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}\}$ and total corpus size $|X| \in \{2\times10^{3}, 2\times10^{4}, 213354\}$ to examine their effect on the representation.
+    \item \textbf{HDPGMM}\footnote{inference algorithm in \cref{alg:inference} is implemented on \texttt{PyTorch}~\cite{NEURIPS2019_9015}, and thus support GPU acceleration.} uses the base audio feature with the whitening following~\cite{DBLP:conf/ismir/NamHSS12}. As for song-level representation $y_{j}$, we employ the expectation $\tilde{y}_{jk} = \mathbb{E}_{q}[\text{log}\,p(X_{j}|c_{j}, z_{j}, \phi_{k})]$ and normalize them over components and the length of the clip $y_{jk} = N_{j}^{-1}\frac{\tilde{y}_{jk}}{\sum_{k^{\prime}=1}^{K}\tilde{y}_{jk^{\prime}}}$. We adopt most of the hyper-parameter setup found from previous work~\cite{DBLP:journals/jmlr/WangPB11}; we set the maximum number of components on the corpus level $K$ and the song level $T$ as $256$ and $32$ respectively, mini-batch size to $1024$, learning rate parameters $\kappa=0.6$ and $\tau_{0}=64$. We, however, explore the regularization rate $\eta_{0} \in \{10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}\}$ and total corpus size $|X| \in \{2\times10^{3}, 2\times10^{4}, 213354\}$ to examine their effect on the representation.
 \end{itemize}
 For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update for $100$ epochs. Finally, we take the logarithm of the representation $\hat{y_{j}} = \text{log}(\text{max}(y_{j}, 10^{-8}))$ if it is given as the probability simplex (i.e., VQCodebook, HDPGMM).
-
 
 
 \section{Result and Discussion}\label{sec:result_discussion}
@@ -435,14 +434,14 @@ For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update 
                             & HDPGMM        & \textbf{0.8452 ($\pm$ 0.0016)} \\
     \hline
 \end{tabular}
-\caption{Main result.}
+\caption{Evaluation result on downstream tasks.}
 \label{tab:main_result}
 \end{table}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{figs/regularization_effect.pdf}
-    \caption{regularization effect}
+    \caption{Effect of regularization factor $\eta_{0}$ on HDPGMM model.}
     \label{fig:regularization_effect}
 \end{figure}
 
