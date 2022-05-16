@@ -36,12 +36,6 @@ def parse_arguments() -> argparse.ArgumentParser:
                         help="path where split info dataset")
     parser.add_argument("out_path", type=str,
                         help="root directory where fitted model is stored")
-    parser.add_argument('--exclude-1st-dim', default=False,
-                        action=argparse.BooleanOptionalAction,
-                        help="exclude loudness dim of MFCC")
-    parser.add_argument('--exclude-chroma-dims', default=False,
-                        action=argparse.BooleanOptionalAction,
-                        help="exclude chroma features")
     parser.add_argument('-j', '--n-jobs', type=int, default=2,
                         help='number of cores for extract HDPGMM features')
     parser.add_argument('--verbose', default=True,
@@ -63,8 +57,6 @@ def main():
                              args.model_path,
                              args.dataset_path,
                              args.split_path,
-                             args.exclude_1st_dim,
-                             args.exclude_chroma_dims,
                              n_jobs=args.n_jobs)
     logger.info('Testing Done!')
 
