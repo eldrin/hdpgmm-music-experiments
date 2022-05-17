@@ -21,6 +21,7 @@
 \crefrangeformat{equation}{Eq.~(#3#1#4) to~(#5#2#6)}
 \Crefrangeformat{equation}{Equations~(#3#1#4) to~(#5#2#6)}
 \usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage{color}
 \usepackage{multirow}
 \usepackage{enumitem}
@@ -316,7 +317,7 @@ Initialize $\mathbf{\phi}=(\phi_{k})^{K}_{k=1}$, $u=(u_{k})^{K}_{k=1}$, $v=(v_{k
 \subsection{Further Regularization}\label{sec:hdpgmm:regularization}
 
 Inspired by the implementation of \cite{DBLP:journals/jmlr/WangPB11, 10.1214/06-BA104}, we apply the further regularization on the model. Specifically, we ``splash'' the uniform noise to the inferred responsibility $r_{jn}$ as it can be biased if the groups are corrupted or impcomplete, such as the preview audio of the entire song:
-\begin{equation}
+\begin{equation}\label{eq:additional_regularization}
     \tilde{r}_{jn} = (1 - \eta_{t}) r_{jn} + \eta_{t} e
 \end{equation}
 $\eta_{t}$ is the regularization coefficient that determines the extent uniform noise $e = (e_{k})_{k=1}^{K}$ is mixed into $r_{jn}$. $\eta_{t} = \frac{\eta_{0} * 10^{3}}{(t + 10^{3})}$ also is defined as decaying function similar to the learning rate $\rho_{t}$.
@@ -385,42 +386,49 @@ We select a set of audio features to infer the HDPGMM and non-DL baseline models
 We evaluate $4$ comparisons against HDPGMM, which includes both DL based models and non-DL based models.
 
 \begin{itemize}[noitemsep, leftmargin=*]
-    \item \textbf{G1} is the simplist model among the comparison. The song-wise feature is represented by the concatenated parameters $\phi = \{\mu, \Sigma\}$ of the single multivariate Gaussian fitted on the frame-level base audio feature vectors within a song\footnote{We chose the diagonalized covariance, which means the feature is concatenation of \emph{mean} and \emph{standard deviation} of features.}.
+    \item \textbf{G1} is the simplist model among the comparison. The song-wise feature is represented by the concatenated parameters $\phi = \{\mu, \Sigma\}$ of the single multivariate Gaussian fitted on the frame-level base audio feature vectors within a song\footnote{We chose the diagonalized covariance, which means the feature is concatenation of \emph{mean} $\mu\in\mathcal{R}^{52}$ and \emph{standard deviation} $\sigma\in\mathcal{R}^{52}$ of features.}.
 
     \item \textbf{VQ Codebook} can be deemed as the simple approximation of HDPGMM models~\cite{DBLP:conf/ismir/HoffmanBC08}. First a corpus-wise $K$ means clustering model is fitted on the song features in the frame-level. Later song-level feature is represented by the normalized frequency of cluster assignment of each frame-level base audio feature vector within the song. It can be interpreted similarly to the inferred cluster assignment variable $\pi_{j}$ in Eq. (\ref{eq:hdpmm}). We set the number of cluster as $256$, same to the maximum number of corpus-level components $K$ of HDPGMM models.
         % As the number of corpus level cluster $K$ is a free parameter, we assess in total four variants $K \in \{32, 64, 128, 256\}$ to provide a comprehensive overview.
 
     \item \textbf{KIM} is a DL based music representation trained in a simple self-supervised learning framework~\cite{DBLP:journals/nca/KimULH20}. The objective function of the model is to measure the extent which a siamenese neural network~\cite{koch2015siamese} can predict whether the two song clips it takes are cropped from the same song or different songs. We use the original implementation of the work, which takes the stereo mel-spectrogram as input. The representation is extracted from the last hidden layer before the prediction, and summarized with global average and standard devication pooling, through the entire song excerpt.
 
-    \item \textbf{CLMR}~\cite{DBLP:conf/ismir/SpijkervetB21} is recent DL based music representation employing the self-supervised learning through the contrastive learning method~\cite{DBLP:conf/icml/ChenK0H20}. We employed the original implementation of~\cite{DBLP:conf/ismir/SpijkervetB21} that uses the raw audio samples as input feature\footnote{Unlike the original work, we do not apply the data augmentation for a fair comparison and also as it is beyond the main scope of the work. However, as it is reported that it can meaningfully improve the representation, we assume that applying the method would benefit similarly to other models as well.}. The representation is drawn from the last hidden layer and pooled with global average over the entire song excerpt.
+    \item \textbf{CLMR}~\cite{DBLP:conf/ismir/SpijkervetB21} is recent DL based music representation employing the self-supervised learning through the contrastive learning method~\cite{DBLP:conf/icml/ChenK0H20}. We employed the original implementation of~\cite{DBLP:conf/ismir/SpijkervetB21} that uses the raw audio samples as input feature\footnote{Unlike the original work, we set the dimensionality of hidden layer where we extract the representation as $256$ to control the representation dimensionality with other comparisons. Also, we do not apply the data augmentation for a fair comparison and also as it is beyond the main scope of the work. However, as it is reported that it can meaningfully improve the representation, we assume that applying the method would benefit similarly to other models as well.}. The representation is drawn from the last hidden layer and pooled with global average over the entire song excerpt.
 
     \item \textbf{HDPGMM}\footnote{inference algorithm in \cref{alg:inference} is implemented on \texttt{PyTorch}~\cite{NEURIPS2019_9015}, and thus support GPU acceleration.} uses the base audio feature with the whitening following~\cite{DBLP:conf/ismir/NamHSS12}. As for song-level representation $y_{j}$, we employ the expectation $\tilde{y}_{jk} = \mathbb{E}_{q}[\text{log}\,p(X_{j}|c_{j}, z_{j}, \phi_{k})]$ and normalize them over components and the length of the clip $y_{jk} = N_{j}^{-1}\frac{\tilde{y}_{jk}}{\sum_{k^{\prime}=1}^{K}\tilde{y}_{jk^{\prime}}}$. We adopt most of the hyper-parameter setup found from previous work~\cite{DBLP:journals/jmlr/WangPB11}; we set the maximum number of components on the corpus level $K$ and the song level $T$ as $256$ and $32$ respectively, mini-batch size to $1024$, learning rate parameters $\kappa=0.6$ and $\tau_{0}=64$. We, however, explore the regularization rate $\eta_{0} \in \{10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}\}$ and total corpus size $|X| \in \{2\times10^{3}, 2\times10^{4}, 213354\}$ to examine their effect on the representation.
 \end{itemize}
-For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update for $100$ epochs. Finally, we take the logarithm of the representation $\hat{y_{j}} = \text{log}(\text{max}(y_{j}, 10^{-8}))$ if it is given as the probability simplex (i.e., VQCodebook, HDPGMM).
+
+For the learning based models (i.e., KIM, CLMR, HDPGMM), we repeated $3$ trials to incorporate any random effect of learning algorithms. Within a trial, we iterated the update for $100$ epochs. Further, we set the dimensionality of the representation is set to $256$, homogeneous accross all comparisons except $G1$. Finally, we take the logarithm of the representation $\hat{y_{j}} = \text{log}(\text{max}(y_{j}, 10^{-8}))$ if it is given as the probability simplex (i.e., VQCodebook, HDPGMM).
 
 
 \section{Result and Discussion}\label{sec:result_discussion}
 
+\subsection{Effect of learning factors}\label{sec:result_discussion:learning_factors}
 
-\begin{table*}[h]
-\centering
-\small
-\begin{tabular}{ ccccccc }
-    \hline
-    Hip-Hop & country & female vocalists & pop & electronic & pop & oldies \\
-    pop & rock & singer-songwriter & female vocalists & dance & soul & blues \\
-    rnb & pop & pop & female vocalist & electronica & female vocalists & country \\
-    soul & oldies & acoustic & rock & funk & rnb & 60s \\
-    male vocalists & indie & Mellow & Love & electro & dance & soul \\
-    rock & singer-songwriter & folk & dance & Hip-Hop & Hip-Hop & rock \\
-    hip hop & classic rock & female vocalist & female & House & rock & classic rock \\
-    \hline
-    $0.0394$ & $0.0308$ & $0.0299$ & $0.0269$ & $0.0268$ & $0.0248$ & $0.0227$ \\
-    \hline
-\end{tabular}
-\caption{Top tags for a few mostly ``loaded'' components (column-wise). The last row is the normalized total responsibility $\tilde{N}_{k} = \frac{N_{k}}{\sum_{k^{\prime}}^{K} N_{k^{\prime}}}$, meaning the proportional amount of songs having the component.}
-\label{tab:topic_tags}
-\end{table*}
+We first discuss the effects of the two learning factors of HDPGMM on its representation. As Figure \ref{fig:effects} shows, the result suggests that the additional regularization in Eq (\ref{eq:additional_regularization}) generally effect positvely on the performance of all the downstream tasks we tested. It implies that the entire song inputs would likely improve the representation further, as the regularization crudely mask the effect of the missing data due to the preview clipping to some extent.
+
+Further, we found that the number of training samples also have a rather clear positive effect on the performances. We measured the effect by repeately sub-sampling the MSD training data $5$ times in two different sizes mentioned in \ref{sec:experimental_setup:comparisons}, and conduct the same evalution routine as the full training set. The result shows that the positive effect is logarithmic, which suggest that to get a linear improvement in the performance, the representation should be learned with exponentially larger dataset.
+
+
+\begin{figure}[h]
+    \begin{subfigure}{\linewidth}    
+        \centering
+        \includegraphics[width=\linewidth]{figs/regularization_effect.pdf}
+        \caption{Effect of regularization factor $\eta_{0}$.}
+        \label{fig:effects:regularization_effect}
+    \end{subfigure}
+
+    \begin{subfigure}{\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/num_sample_effect.pdf}
+        \caption{Effect of the number of training samples.}
+        \label{fig:effects:num_samples_effect}
+    \end{subfigure}
+    \caption{Effect of the learning factors on HDPGMM. Error bar indicates the standard deviation, and grey dots are the raw datapoints.}
+    \label{fig:effects}
+\end{figure}
+
+\subsection{Model Comparison}\label{sec:result_discussion:model_comparison}
 
 \begin{table}[h]
 \centering
@@ -448,8 +456,8 @@ For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update 
     %                         & VQCodebook128 & 0.5318 ($\pm$ 0.0000) \\
     %                         & VQCodebook256 & 0.5776 ($\pm$ 0.0000) \\
                             & KIM           & 0.5448 ($\pm$ 0.0245) \\
-                            & CLMR          & 0.6259 ($\pm$ 0.0097) \\
-                            & HDPGMM        & \textbf{0.6471 ($\pm$ 0.0059)} \\
+                            & CLMR          & \textbf{0.6681 ($\pm$ 0.0000)} \\
+                            & HDPGMM        & 0.6471 ($\pm$ 0.0059) \\
     \hline
     \multirow{8}*{MTAT}     & G1            & 0.8435 ($\pm$ 0.0000) \\ 
                             & VQCodebook    & 0.8373 ($\pm$ 0.0000) \\
@@ -459,7 +467,7 @@ For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update 
     %                         & VQCodebook128 & 0.8281 ($\pm$ 0.0000) \\
     %                         & VQCodebook256 & 0.8373 ($\pm$ 0.0000) \\
                             & KIM           & 0.8021 ($\pm$ 0.0041) \\
-                            & CLMR          & 0.8098 ($\pm$ 0.0004) \\
+                            & CLMR          & 0.8248 ($\pm$ 0.0000) \\
                             & HDPGMM        & \textbf{0.8452 ($\pm$ 0.0016)} \\
     \hline
 \end{tabular}
@@ -467,13 +475,28 @@ For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update 
 \label{tab:main_result}
 \end{table}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\linewidth]{figs/regularization_effect.pdf}
-    \caption{Effect of regularization factor $\eta_{0}$ on HDPGMM model.}
-    \label{fig:regularization_effect}
-\end{figure}
 
+\subsection{Component Interpretability}\label{sec:result_discussion:interpretability}
+
+\begin{table*}[h]
+\centering
+\small
+\begin{tabular}{ ccccccc }
+    \hline
+    Hip-Hop & country & female vocalists & pop & electronic & pop & oldies \\
+    pop & rock & singer-songwriter & female vocalists & dance & soul & blues \\
+    rnb & pop & pop & female vocalist & electronica & female vocalists & country \\
+    soul & oldies & acoustic & rock & funk & rnb & 60s \\
+    male vocalists & indie & Mellow & Love & electro & dance & soul \\
+    rock & singer-songwriter & folk & dance & Hip-Hop & Hip-Hop & rock \\
+    hip hop & classic rock & female vocalist & female & House & rock & classic rock \\
+    \hline
+    $0.0394$ & $0.0308$ & $0.0299$ & $0.0269$ & $0.0268$ & $0.0248$ & $0.0227$ \\
+    \hline
+\end{tabular}
+\caption{Top tags for a few mostly ``loaded'' components (column-wise). The last row is the normalized total responsibility $\tilde{N}_{k} = \frac{N_{k}}{\sum_{k^{\prime}}^{K} N_{k^{\prime}}}$, meaning the proportional amount of songs having the component.}
+\label{tab:topic_tags}
+\end{table*}
 
 
 
