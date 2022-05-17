@@ -122,9 +122,13 @@ for (i in 1:length(datasets)) {
     geom_line(aes(group=1, ymin=score - sd, ymax=score + sd), data=d.summary.dataset) +
     geom_errorbar(aes(ymin=score - sd, ymax=score + sd), data=d.summary.dataset, width = 0.2) +
     geom_point(aes(ymin=score - sd, ymax=score + sd), data=d.summary.dataset, size = 2) +
-    xlab(TeX(r'($\eta_{0}$)')) + ylab(acc.measures[[i]]) + facet_wrap(dataset~.) +
+    xlab(TeX(r'(#samples)')) + ylab(acc.measures[[i]]) + facet_wrap(dataset~.) +
     theme_pubclean() +
     theme(axis.text.x = element_text(angle = 45, hjust=1))
   ps[[i]] = p_
 }
 (p <- ggarrange(plotlist=ps, nrow = 1, ncol = 3))
+
+ggsave('./paper/ismir_submission/figs/num_sample_effect.pdf',
+       plot=p, width = 2000, height = 900, units="px",
+       dpi = 320)
