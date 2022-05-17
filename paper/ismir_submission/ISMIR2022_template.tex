@@ -14,6 +14,7 @@
 \usepackage[T1]{fontenc} % add special characters (e.g., umlaute)
 \usepackage[utf8]{inputenc} % set utf-8 as default input encoding
 \usepackage{ismir,amsmath,cite,url}
+\usepackage{float}
 \usepackage{amssymb}
 \usepackage[ruled]{algorithm2e}
 \usepackage{cleveref}
@@ -386,7 +387,8 @@ We evaluate $4$ comparisons against HDPGMM, which includes both DL based models 
 \begin{itemize}[noitemsep, leftmargin=*]
     \item \textbf{G1} is the simplist model among the comparison. The song-wise feature is represented by the concatenated parameters $\phi = \{\mu, \Sigma\}$ of the single multivariate Gaussian fitted on the frame-level base audio feature vectors within a song\footnote{We chose the diagonalized covariance, which means the feature is concatenation of \emph{mean} and \emph{standard deviation} of features.}.
 
-    \item \textbf{VQ Codebook} can be deemed as the simple approximation of HDPGMM models~\cite{DBLP:conf/ismir/HoffmanBC08}. First a corpus-wise $K$ means clustering model is fitted on the song features in the frame-level. Later song-level feature is represented by the normalized frequency of cluster assignment of each frame-level base audio feature vector within the song. It can be interpreted similarly to the inferred cluster assignment variable $\pi_{j}$ in Eq. (\ref{eq:hdpmm}). As the number of corpus level cluster $K$ is a free parameter, we assess in total four variants $K \in \{32, 64, 128, 256\}$ to provide a comprehensive overview.
+    \item \textbf{VQ Codebook} can be deemed as the simple approximation of HDPGMM models~\cite{DBLP:conf/ismir/HoffmanBC08}. First a corpus-wise $K$ means clustering model is fitted on the song features in the frame-level. Later song-level feature is represented by the normalized frequency of cluster assignment of each frame-level base audio feature vector within the song. It can be interpreted similarly to the inferred cluster assignment variable $\pi_{j}$ in Eq. (\ref{eq:hdpmm}). We set the number of cluster as $256$, same to the maximum number of corpus-level components $K$ of HDPGMM models.
+        % As the number of corpus level cluster $K$ is a free parameter, we assess in total four variants $K \in \{32, 64, 128, 256\}$ to provide a comprehensive overview.
 
     \item \textbf{KIM} is a DL based music representation trained in a simple self-supervised learning framework~\cite{DBLP:journals/nca/KimULH20}. The objective function of the model is to measure the extent which a siamenese neural network~\cite{koch2015siamese} can predict whether the two song clips it takes are cropped from the same song or different songs. We use the original implementation of the work, which takes the stereo mel-spectrogram as input. The representation is extracted from the last hidden layer before the prediction, and summarized with global average and standard devication pooling, through the entire song excerpt.
 
@@ -399,36 +401,63 @@ For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update 
 
 \section{Result and Discussion}\label{sec:result_discussion}
 
-\begin{table}[h!]
+
+\begin{table*}[h]
+\centering
+\small
+\begin{tabular}{ ccccccc }
+    \hline
+    Hip-Hop & country & female vocalists & pop & electronic & pop & oldies \\
+    pop & rock & singer-songwriter & female vocalists & dance & soul & blues \\
+    rnb & pop & pop & female vocalist & electronica & female vocalists & country \\
+    soul & oldies & acoustic & rock & funk & rnb & 60s \\
+    male vocalists & indie & Mellow & Love & electro & dance & soul \\
+    rock & singer-songwriter & folk & dance & Hip-Hop & Hip-Hop & rock \\
+    hip hop & classic rock & female vocalist & female & House & rock & classic rock \\
+    \hline
+    $0.3941$ & $0.3080$ & $0.2994$ & $0.2690$ & $0.2680$ & $0.2480$ & $0.2270$ \\
+    \hline
+\end{tabular}
+\caption{Top tags for a few mostly ``loaded'' components (column-wise). The last row is the normalized total responsibility $\tilde{N}_{k} = \frac{N_{k}}{\sum_{k^{\prime}}^{K} N_{k^{\prime}}}$, meaning the proportional amount of songs having the component.}
+\label{tab:topic_tags}
+\end{table*}
+
+\begin{table}[h]
 \centering
 \begin{tabular}{ c|l|c }
     \hline
     Dataset                 & Model         & Mean Acc.($\pm$SD)    \\ 
     \hline
     \hline 
-    \multirow{8}*{Echonest} & G1            & 0.0252 ($\pm$ 0.0000) \\ 
-                            & VQCodebook32  & 0.0119 ($\pm$ 0.0000) \\
-                            & VQCodebook64  & 0.0111 ($\pm$ 0.0000) \\
-                            & VQCodebook128 & 0.0138 ($\pm$ 0.0000) \\
-                            & VQCodebook256 & 0.0158 ($\pm$ 0.0000) \\
+    \multirow{5}*{Echonest} & G1            & 0.0252 ($\pm$ 0.0000) \\ 
+                            & VQCodebook    & 0.0158 ($\pm$ 0.0000) \\
+    % \multirow{8}*{Echonest} & G1            & 0.0252 ($\pm$ 0.0000) \\ 
+    %                         & VQCodebook32  & 0.0119 ($\pm$ 0.0000) \\
+    %                         & VQCodebook64  & 0.0111 ($\pm$ 0.0000) \\
+    %                         & VQCodebook128 & 0.0138 ($\pm$ 0.0000) \\
+    %                         & VQCodebook256 & 0.0158 ($\pm$ 0.0000) \\
                             & KIM           & 0.0262 ($\pm$ 0.0012) \\
                             & CLMR          & \textbf{0.0279 ($\pm$ 0.0000)} \\
                             & HDPGMM        & 0.0224 ($\pm$ 0.0004) \\
     \hline
-    \multirow{8}*{GTZAN}    & G1            & 0.5409 ($\pm$ 0.0000) \\ 
-                            & VQCodebook32  & 0.4508 ($\pm$ 0.0000) \\
-                            & VQCodebook64  & 0.5051 ($\pm$ 0.0000) \\
-                            & VQCodebook128 & 0.5318 ($\pm$ 0.0000) \\
-                            & VQCodebook256 & 0.5776 ($\pm$ 0.0000) \\
+    \multirow{5}*{GTZAN}    & G1            & 0.5409 ($\pm$ 0.0000) \\ 
+                            & VQCodebook    & 0.5776 ($\pm$ 0.0000) \\
+    % \multirow{8}*{GTZAN}    & G1            & 0.5409 ($\pm$ 0.0000) \\ 
+    %                         & VQCodebook32  & 0.4508 ($\pm$ 0.0000) \\
+    %                         & VQCodebook64  & 0.5051 ($\pm$ 0.0000) \\
+    %                         & VQCodebook128 & 0.5318 ($\pm$ 0.0000) \\
+    %                         & VQCodebook256 & 0.5776 ($\pm$ 0.0000) \\
                             & KIM           & 0.5448 ($\pm$ 0.0245) \\
                             & CLMR          & 0.6259 ($\pm$ 0.0097) \\
                             & HDPGMM        & \textbf{0.6471 ($\pm$ 0.0059)} \\
     \hline
     \multirow{8}*{MTAT}     & G1            & 0.8435 ($\pm$ 0.0000) \\ 
-                            & VQCodebook32  & 0.7804 ($\pm$ 0.0000) \\
-                            & VQCodebook64  & 0.8035 ($\pm$ 0.0000) \\
-                            & VQCodebook128 & 0.8281 ($\pm$ 0.0000) \\
-                            & VQCodebook256 & 0.8373 ($\pm$ 0.0000) \\
+                            & VQCodebook    & 0.8373 ($\pm$ 0.0000) \\
+    % \multirow{8}*{MTAT}     & G1            & 0.8435 ($\pm$ 0.0000) \\ 
+    %                         & VQCodebook32  & 0.7804 ($\pm$ 0.0000) \\
+    %                         & VQCodebook64  & 0.8035 ($\pm$ 0.0000) \\
+    %                         & VQCodebook128 & 0.8281 ($\pm$ 0.0000) \\
+    %                         & VQCodebook256 & 0.8373 ($\pm$ 0.0000) \\
                             & KIM           & 0.8021 ($\pm$ 0.0041) \\
                             & CLMR          & 0.8098 ($\pm$ 0.0004) \\
                             & HDPGMM        & \textbf{0.8452 ($\pm$ 0.0016)} \\
@@ -444,6 +473,9 @@ For the learning based models (i.e., KIM, CLMR, HDPGMM), we iterated the update 
     \caption{Effect of regularization factor $\eta_{0}$ on HDPGMM model.}
     \label{fig:regularization_effect}
 \end{figure}
+
+
+
 
 
 \section{Conclusion and Future Works}\label{sec:conclusion}
