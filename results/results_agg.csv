@@ -729,3 +729,8 @@
 727,vqcodebook256,magnatagatune,2,4,0.8373327450244388,rocauc_score_macro,,
 728,vqcodebook256,magnatagatune,2,4,0.8373327450244388,rocauc_score_macro,,
 729,vqcodebook256,magnatagatune,2,4,0.8373327450244388,rocauc_score_macro,,
+730,clmr256,magnatagatune,0,4,0.8248420870962702,rocauc_score_macro,,
+731,clmr256,magnatagatune,0,4,0.8248420870962702,rocauc_score_macro,,
+732,clmr256,magnatagatune,0,4,0.8248420870962702,rocauc_score_macro,,
+733,clmr256,magnatagatune,0,4,0.8248420870962702,rocauc_score_macro,,
+734,clmr256,magnatagatune,0,4,0.8248420870962702,rocauc_score_macro,,
