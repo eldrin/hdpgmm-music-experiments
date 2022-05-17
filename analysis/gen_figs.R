@@ -81,6 +81,7 @@ d %>% filter((regularization == 1e-1 & n_train == '200k') | is.na(regularization
                                  "vqcodebook256",
                                  "kim",
                                  "clmr",
+                                 "clmr256",
                                  "hdpgmm"))) %>%
   ggplot(aes(x=model, y=score)) +
   geom_boxplot() +
@@ -93,3 +94,37 @@ d.all.summary <- d %>%
     sd = sd(score, na.rm =T),
     score = mean(score)
   )
+
+
+# PER DATASET SIZE
+d %>% filter(!is.na(n_train) & regularization == 1e-1) %>%
+  mutate(model = factor(model, levels=c("hdpgmm"))) %>%
+  ggplot(aes(x=n_train, y=score)) +
+  geom_boxplot() +
+  facet_wrap(.~dataset, scales='free_y')
+
+
+d.summary <- d %>%
+  filter(!is.na(n_train) & regularization == 1e-1) %>%
+  group_by(n_train, dataset) %>%
+  summarise(
+    sd = sd(score, na.rm =T),
+    score = mean(score)
+  )
+ps = list()
+for (i in 1:length(datasets)) {
+  d.summary.dataset = d.summary %>% filter(dataset == datasets[[i]])
+  
+  p_ <- d %>% filter(!is.na(n_train) & regularization == 1e-1 & dataset == datasets[[i]]) %>%
+    mutate(n_train = factor(n_train, levels=c("2k", "20k", "200k"))) %>%
+    ggplot(aes(x=n_train, y=score)) +
+    geom_jitter(position = position_jitter(0.2), alpha = .2) +
+    geom_line(aes(group=1, ymin=score - sd, ymax=score + sd), data=d.summary.dataset) +
+    geom_errorbar(aes(ymin=score - sd, ymax=score + sd), data=d.summary.dataset, width = 0.2) +
+    geom_point(aes(ymin=score - sd, ymax=score + sd), data=d.summary.dataset, size = 2) +
+    xlab(TeX(r'($\eta_{0}$)')) + ylab(acc.measures[[i]]) + facet_wrap(dataset~.) +
+    theme_pubclean() +
+    theme(axis.text.x = element_text(angle = 45, hjust=1))
+  ps[[i]] = p_
+}
+(p <- ggarrange(plotlist=ps, nrow = 1, ncol = 3))
