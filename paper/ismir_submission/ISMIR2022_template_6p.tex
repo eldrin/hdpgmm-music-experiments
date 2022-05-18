@@ -122,7 +122,7 @@ Despite the similar premises they propose, however, Bayesian nonparametric model
 The research goal of this work is to assess the music representation learned from Bayesian nonparametric models by comparing them to the modern deep neural network models. In particular, we consider the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:journals/jmlr/WangPB11,DBLP:conf/ismir/YoshiiG09,doi:10.1198/016214506000000302} as our model of interest. The comparison can confirm the potential of Bayesian nonparametric models as a representation learner over the DL methods.
 	To concretize the comparison, we employ the transfer learning experimental framework~\cite{DBLP:journals/nca/KimULH20, DBLP:conf/ismir/ChoiFSC17, DBLP:conf/ismir/DielemanBS11}, which is commonly used for assessing the potential of representation itself. The contribution of this work can be listed as follows:
 
-\begin{enumerate}
+\begin{enumerate}[noitemsep]
     \item We explore and suggest insight how ``good'' the music representation learned by Bayesian nonparametric models is under a range MIR tasks.
     \item We provide an efficient, GPU accelerated inference algorithm for HDPGMM, which can handle relatively scaled data.
 \end{enumerate}
@@ -136,10 +136,7 @@ In this subsection, we introduce the main model we employ for this study, the Hi
 
 \subsection{Dirichlet Process Mixture Models}\label{sec:hdpgmm:dpmm}
 
-Mixture models such as GMMs assume a finite number of components from which each observed feature vector is drawn. It is well known that finding the optimal number $K$ of the mixture components is a complex problem. A few approaches can help estimate $K$, such as using cross-validation. Dirichlet Process Mixture Model (DPMM) circumvents this problem by parametrizing the number of mixtures as part of the model. DP plays a central role for such models.
-
-DP is a stochastic process that draws random probability distributions. Due to this property, it is often described as a distribution over distributions~\cite{DBLP:reference/ml/Teh17}. It can also be seen as the infinite-dimensional generalization of the Dirichlet distributions~\cite{DBLP:reference/ml/Teh17}.
-This aspect is the core building block of the Bayesian non-parametric models such as infinite mixture models. Setting DP as a prior distribution for the responsibility $\pi$ (also often referred to as mixture probability) of mixture components allows the mixture model to infer the relative weight among components and the appropriate number of maximum components for given observations.
+The Dirichlet Process (DP) is an well-known stochastic process that draws random probability distributions, which often is described as a distribution over distributions~\cite{DBLP:reference/ml/Teh17}. One of the most common applications of DP is the infinite mixture model thanks to the property of DP that one can draw a arbitrary length of distribution. Such Dirichlet Process Mixture Models (DPMM) can find the appropriate number of components $K$ based on the set of observation as part of the learning process.
 
 Among several ways to represent DP, we introduce the stick-breaking construction~\cite{sethuraman94}.
 \footnote{Literature commonly chooses the Chinese Restaurant Process (CRP) as an illustrative metaphor for DP as it is intuitive and well explains various properties of DP~\cite{DBLP:reference/ml/Teh17}. We mainly discuss DP with the stick-breaking construction due to its further usage in the model inference within the work. For readers interested in other metaphorical descriptions of DP, we kindly refer them to~\cite{DBLP:reference/ml/Teh17, DBLP:conf/ismir/HoffmanBC08}}
@@ -158,8 +155,8 @@ Stick-breaking constructs DP in a simple and general manner. Formally, it is as 
 where two euqations in the left column represent the draw of infinite dimensional weight $\beta_{k}$ which sums to one. Notably, the distribution for $\beta$ is also referred as $\beta \sim \text{GEM}(\gamma)$~\cite{DBLP:journals/cpc/Pitman02}. In the right column, $H$ denotes the base distribution from which variable $\phi_{k}$ lying in some space $\Phi$ is drawn. The right bottom equation defines the draw of the probability measure $G_{0}$, where $\delta_{\phi_{k}}$ means the point mass centered at the component $\phi_{k}$. Altogether, Eq. \ref{eq:stick_breaking} constructs the DP $G_{0} \sim \text{DP}(\gamma, H)$. Figure \ref{fig:stick_breaking} depicts the process in graphical way.
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.9\linewidth]{figs/stick-breaking.pdf}
-    \caption{Illustration of stick-breaking construction in Eq. \ref{eq:stick_breaking}}
+    \includegraphics[width=0.8\linewidth]{figs/stick-breaking.pdf}
+    \caption{Illustration of stick-breaking construction.}
     \label{fig:stick_breaking}
 \end{figure}
 In mixture model context, we want to infer mixture components $\{\phi_{1}, \phi_{2}, \cdots, \phi_{k}, \cdots\}$ that fits to the data observations $\{x_{1}, x_{2}, \cdots, x_{n}\}$, which are assumed to be drawn from distributions $F(\phi)$ parameterized with variable $\phi$ (i.e., mean and covariance $\phi = \{\mu, \Sigma\}$ in case of the multivariate Gaussian $F$). we can now use DP to draw $\phi$ as $i$th mixture components corresponds to the $i$th observation $x_{i}$ by introducing the cluster assignment variable $y_{i} \sim \text{Mult}(\beta)$:
@@ -214,14 +211,14 @@ where we use the indicator $z_{jn}$ to select $\psi_{jt}$, which eventually is m
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{figs/HDP-stick-breaking.pdf}
-    \caption{Illustration of 2-level HDPMM within corpus-song context. The top illustration depicts the corpus-level DP similar to Figure \ref{fig:stick_breaking}. The second-row illustrations describe the draw of second-level (song-level) DPs per song from the corpus-level DP. DPMM assumes that song features are drawn from each song-level DPs, as depicted in the third row of the image.}
+    \caption{Illustration of 2-level HDPMM within corpus-song context. The top row depicts the corpus-level DP. The second row describes the draw of second-level (song-level) DPs per song from the corpus-level DP. Frame-level features are drawn from each song-level DPs, as depicted in the third row of the image.}
     \label{fig:hdpmm}
 \end{figure}
 
 
 \subsection{Inference Algorithm}\label{sec:hdpgmm:inference}
 
-In this section, we discuss the inference (training) algorithm. We employ the online Variational Inference (VI)~\cite{DBLP:journals/jmlr/WangPB11}. VI is one of the common choices to infer fully Bayesian models and is usually significantly faster than other methods such as Markov Chain Monte Carlo (MCMC) with the expense of its relative precision. VI seeks the simpler, approximated version of the true posterior by minimizing the Kullback-Leibler (KL) divergence between approximation $q(Z)$ and the true posterior $p(Z|X)$, where $Z$ denotes the set of latent variables and parameters that we want to find, and $X$ refers a set of observations~\cite{DBLP:journals/jei/BishopN07}.
+In this section, we discuss the inference (training) algorithm. We employ the online Variational Inference (VI)~\cite{DBLP:journals/jmlr/WangPB11} which is a common choice to infer fully Bayesian models and is usually significantly faster than the MCMC. VI approximates the true posterior by minimizing the Kullback-Leibler (KL) divergence between the approximation $q(Z)$ and the true posterior $p(Z|X)$, where $Z$ denotes the set of latent variables and parameters that we want to find, and $X$ refers a set of observations~\cite{DBLP:journals/jei/BishopN07}.
 % TODO: add bit more about the VI being approximating posterior (i.e., ln p(X) = L(q) + KL(q||p))
 % p(Z|X) : posterior for variables Z
 % p(X) : model evidence
@@ -233,18 +230,16 @@ One of the popular simpliciation is full-factorization of the distribution $q(Z)
 \end{equation}
 where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportion, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers to the parameter(s) for the $F$ which draws the atomic observation, set as (multivariate) Gaussian in our context. Thus, $\phi$ includes the means $\mu$ and precision matrices $\Lambda$ of each Gaussian component\footnote{We adopt the result from \cite{DBLP:journals/jei/BishopN07}, where the Gaussian-Wishart distribution is used for the prior.}.
 
-Each variational distribution further factorize as follows:
+Each variational distribution further factorize:
 \begin{equation}\label{eq:meanfield_further}
-\begin{aligned}
+\begin{aligned}[c]
     q(\beta^{\prime}) &= \textstyle \prod\nolimits_{k}^{K-1}\text{Beta}(\beta^{\prime}_{k}|u_{k}, v_{k}) \\
     q(\pi^{\prime}) &= \textstyle \prod\nolimits_{t}^{T-1}\text{Beta}(\pi^{\prime}_{t}|a_{t}, b_{t}) \\
     q(c) &= \textstyle \prod\nolimits_{j}\prod\nolimits_{t}\text{Mult}(c_{jt}|\varphi_{jt}) \\
-    q(z) &= \textstyle \prod\nolimits_{j}\prod\nolimits_{n}\text{Mult}(z_{jn}|\zeta_{jn}) \\
+    q(z) &= \textstyle \prod\nolimits_{j}\prod\nolimits_{n}\text{Mult}(z_{jn}|\zeta_{jn})
 \end{aligned}
 \end{equation}
-where $u_{k}, v_{k}, a_{t}, b_{t}$ denote the variational parameters for the Beta distributions for corpus-level and group-level stick proportions, respectively. $\varphi_{jt}\in\mathbb{R}^{K}, \zeta_{jn}\in\mathbb{R}^{T}$ are the variational parameters for the Multinomial distribution to draw the selector $c$ and $z$.
-
-Notably, we truncate the infinite Beta distributions by $K$ and $T$, a common method for applying VI on the infinite mixture model. With a sufficiently large number for the truncation, the model will still not be limited to the truncation and will only use the number of components suited to the given dataset. The final variational distribution is the Gaussian-Wishart prior distribution which draws the Gaussian parameters $\phi = \{\mu, \Lambda\}$ for distribution $F$:
+where $u_{k}, v_{k}, a_{t}, b_{t}$ denote the variational parameters for the Beta distributions for corpus-level and group-level stick proportions, respectively. $\varphi_{jt}\in\mathbb{R}^{K}, \zeta_{jn}\in\mathbb{R}^{T}$ are the variational parameters for the Multinomial distribution to draw the selector $c$ and $z$. Also, we truncate the infinite Beta distributions by $K$ and $T$. With a sufficiently large number for the truncation, the model will still not be limited to the truncation and will only use the number of components suited to the given dataset. The final variational distribution is the Gaussian-Wishart prior distribution which draws the Gaussian parameters $\phi = \{\mu, \Lambda\}$ for distribution $F$:
 \begin{equation}\label{eq:meanfield_normalwishart}
     q(\phi) = \textstyle \prod\nolimits_{k}^{K}\mathcal{N}(\mu_{k}|m_{k}, (\lambda_{k}\Lambda_{k})^{-1})\mathcal{W}(\Lambda_{k}|W_{k}, \nu_{k})
 \end{equation}
@@ -291,11 +286,11 @@ where $\lambda_{0}\in\mathbb{R}, m_{0}\in\mathbb{R}^{d}, \nu_{0}\in\mathbb{R}, W
 \end{align}
 where $\Psi(\cdot)$ refers the digamma function, and $r_{jnk} = \sum_{t=1}^{T} \zeta_{jnt}\varphi_{jtk}$ is the inferred responsibility of $n$th observation of $j$th group on $k$th component. Standard batch update would compute statistics across the entire corpus, and updates the corpus level parameters. However, it may be slow or may suffer by too large or small numbers accumulated from a large scale corpus.
 
-We employ the online VI in this work, where corpus-level parameters are updated per every group or mini-batch of groups passed. In this way, the early phase of model inference can be accelerated substantially compared to the full-batch update~\cite{DBLP:journals/jmlr/WangPB11, DBLP:conf/nips/HoffmanBB10}. The corpus level update then controlled by the learning rate $\rho_{t} = (\tau_{0} + t)^{-\kappa}$, which is decayed over iterations controlled by the offset parameter $\tau_{0} > 0$ and scale $\kappa \in (0.5, 1]$:
+We employ the online VI, where corpus-level parameters are updated per every group or mini-batch of groups passed. In this way, the early phase of model inference can be accelerated substantially compared to the full-batch update~\cite{DBLP:journals/jmlr/WangPB11, DBLP:conf/nips/HoffmanBB10}. The corpus level update then controlled by the learning rate $\rho_{t} = (\tau_{0} + t)^{-\kappa}$, which is decayed over iterations controlled by the offset parameter $\tau_{0} > 0$ and scale $\kappa \in (0.5, 1]$:
 \begin{equation}\label{eq:minibatch_update}
     Z_{t} = (1 - \rho_{t})Z_{t - 1} + \rho_{t}\tilde{Z}_{t}
 \end{equation}
-where $\tilde{Z}_{t}$ means one of the corpus-level parameter in \crefrange{eq:corpus_update:u}{eq:corpus_update:nu} updated by the given mini-batch at $t$th iteration, while $Z_{t-1}$ is the current parameter. To properly scale the update with respect to the mini-batch size, we weight them by the factor of $w = \frac{|\tilde{X}|}{|X|}$, where $|X|, |\tilde{X}|$ denote the number of groups within the entire observation set $X$ and the mini-batch of groups $\tilde{X}$. The overall inference algorithm is described in Algorithm \ref{alg:inference}.
+where $\tilde{Z}_{t}$ denotes one of the corpus-level parameters in \crefrange{eq:corpus_update:u}{eq:corpus_update:nu} updated by the given mini-batch at $t$th iteration, while $Z_{t-1}$ is the current parameter. To scale the update with respect to the mini-batch size, we weight $\tilde{Z}$ by the factor of $w = \frac{|\tilde{X}|}{|X|}$, where $|X|, |\tilde{X}|$ denote the number of groups within the entire observation set $X$ and the mini-batch of groups $\tilde{X}$. The overall inference algorithm is described in Algorithm \ref{alg:inference}.
 
 \begin{algorithm}
 \caption{Online VI for HDPGMM}\label{alg:inference}
@@ -311,7 +306,7 @@ Initialize $\mathbf{\phi}=(\phi_{k})^{K}_{k=1}$, $u=(u_{k})^{K}_{k=1}$, $v=(v_{k
 }
 \end{algorithm}
 
-\subsection{Further Regularization}\label{sec:hdpgmm:regularization}
+% \subsection{Further Regularization}\label{sec:hdpgmm:regularization}
 
 Inspired by the implementation of \cite{DBLP:journals/jmlr/WangPB11, 10.1214/06-BA104}, we apply further regularization to the model. Specifically, we ``splash'' the uniform noise to the inferred responsibility $r_{jn}$ as it can be biased if the groups are corrupted or incomplete, such as the preview audio of the entire song:
 \begin{equation}\label{eq:additional_regularization}
@@ -384,8 +379,7 @@ We evaluate $4$ comparisons against HDPGMM, including DL-based and non-DL-based 
 \begin{itemize}[noitemsep, leftmargin=*]
     \item \textbf{G1} is the simplest model among the comparisons. The song-wise feature is represented by the concatenated parameters $\phi = \{\mu, \Sigma\}$ of the single multivariate Gaussian fitted on the frame-level base audio feature vectors within a song\footnote{We chose the diagonalized covariance, which means the feature is concatenation of \emph{mean} $\mu\in\mathcal{R}^{52}$ and \emph{standard deviation} $\sigma\in\mathcal{R}^{52}$ of features.}.
 
-    \item \textbf{VQ Codebook} can be deemed as the simple approximation of HDPGMM models~\cite{DBLP:conf/ismir/HoffmanBC08}. First, a corpus-wise $K$ means clustering model is fitted on the song features in the frame level. Later song-level feature is represented by the normalized frequency of cluster assignment of each frame-level base audio feature vector within the song. It can be interpreted similarly to the inferred cluster assignment variable $\pi_{j}$ in Eq. (\ref{eq:hdpmm}). We set the cluster number as $256$, the same as the maximum number of corpus-level components $K$ of HDPGMM models.
-        % As the number of corpus level cluster $K$ is a free parameter, we assess in total four variants $K \in \{32, 64, 128, 256\}$ to provide a comprehensive overview.
+    \item \textbf{VQ Codebook} can be deemed as the approximation of HDPGMM models~\cite{DBLP:conf/ismir/HoffmanBC08}. First, a corpus-wise $K$-means clustering is fitted on the frame level features. Later song-level feature is represented by the normalized frequency of cluster assignment of each frame-level feature within the song\footnote{It can be interpreted similarly to the inferred cluster assignment variable $\pi_{j}$ in Eq. (\ref{eq:hdpmm})}. We set $K=256$.
 
     \item \textbf{KIM} is a DL-based music representation trained in a simple self-supervised learning framework~\cite{DBLP:journals/nca/KimULH20}. The objective function of the model is to measure the extent to which a siamese neural network~\cite{koch2015siamese} can predict whether the two clips it takes are cropped from the same song or different songs. We use the original implementation of the work, which takes the stereo mel-spectrogram as input. The representation is extracted from the last hidden layer before the prediction and summarized with global average and standard deviation pooling through the entire song excerpt.
 
@@ -398,6 +392,27 @@ For the learning-based models (i.e., KIM, CLMR, HDPGMM), we repeated $3$ trials 
 
 
 \section{Result and Discussion}\label{sec:result_discussion}
+
+\begin{table*}[ht]
+\centering
+\small
+\begin{tabular}{ ccccccc }
+    \hline
+    Hip-Hop & country & female vocalists & pop & electronic & pop & oldies \\
+    pop & rock & singer-songwriter & female vocalists & dance & soul & blues \\
+    rnb & pop & pop & female vocalist & electronica & female vocalists & country \\
+    soul & oldies & acoustic & rock & funk & rnb & 60s \\
+    male vocalists & indie & Mellow & Love & electro & dance & soul \\
+    rock & singer-songwriter & folk & dance & Hip-Hop & Hip-Hop & rock \\
+    hip hop & classic rock & female vocalist & female & House & rock & classic rock \\
+    \hline
+    $0.0394$ & $0.0308$ & $0.0299$ & $0.0269$ & $0.0268$ & $0.0248$ & $0.0227$ \\
+    \hline
+\end{tabular}
+\caption{Top tags for a few mostly ``loaded'' components (column-wise). The last row is the normalized total responsibility $\tilde{N}_{k} = \frac{N_{k}}{\sum_{k^{\prime}}^{K} N_{k^{\prime}}}$, meaning the proportional amount of songs having the component.}
+\label{tab:topic_tags}
+\end{table*}
+
 
 \subsection{Effect of learning factors}\label{sec:result_discussion:learning_factors}
 
@@ -462,26 +477,6 @@ Except for this corner case, the HDPGMM representation outperforms the other non
 
 
 \subsection{Component Interpretability}\label{sec:result_discussion:interpretability}
-
-\begin{table*}[h]
-\centering
-\small
-\begin{tabular}{ ccccccc }
-    \hline
-    Hip-Hop & country & female vocalists & pop & electronic & pop & oldies \\
-    pop & rock & singer-songwriter & female vocalists & dance & soul & blues \\
-    rnb & pop & pop & female vocalist & electronica & female vocalists & country \\
-    soul & oldies & acoustic & rock & funk & rnb & 60s \\
-    male vocalists & indie & Mellow & Love & electro & dance & soul \\
-    rock & singer-songwriter & folk & dance & Hip-Hop & Hip-Hop & rock \\
-    hip hop & classic rock & female vocalist & female & House & rock & classic rock \\
-    \hline
-    $0.0394$ & $0.0308$ & $0.0299$ & $0.0269$ & $0.0268$ & $0.0248$ & $0.0227$ \\
-    \hline
-\end{tabular}
-\caption{Top tags for a few mostly ``loaded'' components (column-wise). The last row is the normalized total responsibility $\tilde{N}_{k} = \frac{N_{k}}{\sum_{k^{\prime}}^{K} N_{k^{\prime}}}$, meaning the proportional amount of songs having the component.}
-\label{tab:topic_tags}
-\end{table*}
 
 Finally, we explore the interpretability aspect of the HDPGMM model. To achieve it, we employ the \emph{Lastfm-MSD} music tag dataset~\cite{Bertin-Mahieux2011} where we find the mapping between the MSD song entries and the social music tags. We found that all our MSD training samples have mappings to the social tags, whose vocabulary size reaches roughly half a million. We compute the most relevant music tags for each component found by the HDPGMM model. We estimate the relevance by the proxy measure $w_{tk} = \sum_{t\in{j}}r_{jk}$, where $t$ denotes the tag index and $r_{jk}$ refers the responsibility computed in Eq. \ref{eq:additional_regularization}\footnote{To improve the clarity and interpretability, we filter the most popular tags by weighting the measure by the Inverse Document Frequency (IDF) for each tag.}. Table \ref{tab:topic_tags} shows an example from one of the HDPGMM with high regularization ($\eta_{0}=10^{-1}$). It suggests that the most frequent components (the first column) can be interpreted as the corpus-wide centroid, which roughly means ``all the topics''. From second to the rest it represents a few other topics of music, such as \emph{country-rock (column 1)}, \emph{pop-female vocalist (column 2, 3, 5)}, and \emph{electronic-dance (column 4)}. Notably, several compatible topics (i.e., columns 2, 3, and 5) exist, which can be interpreted as the collection of slightly different sub-clusters of an umbrella topic. It suggests that the more advanced Bayesian nonparametric methods such as hierarchical component models utilizing the nested HDP~\cite{DBLP:journals/pami/PaisleyWBJ15} would further improve the representation.
 
