@@ -405,7 +405,7 @@ For the learning based models (i.e., KIM, CLMR, HDPGMM), we repeated $3$ trials 
 
 \subsection{Effect of learning factors}\label{sec:result_discussion:learning_factors}
 
-We first discuss the effects of the two learning factors of HDPGMM on its representation. As Figure \ref{fig:effects} shows, the result suggests that the additional regularization in Eq (\ref{eq:additional_regularization}) generally effect positvely on the performance of all the downstream tasks we tested. It implies that the entire song inputs would likely improve the representation further, as the regularization crudely mask the effect of the missing data due to the preview clipping to some extent.
+Overall, we observe that the learning factors of HDPGMM can make a substantial difference. As Figure \ref{fig:effects} shows, the result suggests that the additional regularization in Eq (\ref{eq:additional_regularization}) generally effect positvely on the performance of all the downstream tasks we tested. It implies that the entire song inputs would likely improve the representation further, as the regularization crudely mask the effect of the missing data due to the preview clipping to some extent.
 
 Further, we found that the number of training samples also have a rather clear positive effect on the performances. We measured the effect by repeately sub-sampling the MSD training data $5$ times in two different sizes mentioned in \ref{sec:experimental_setup:comparisons}, and conduct the same evalution routine as the full training set. The result shows that the positive effect is logarithmic, which suggest that to get a linear improvement in the performance, the representation should be learned with exponentially larger dataset.
 
@@ -414,14 +414,14 @@ Further, we found that the number of training samples also have a rather clear p
     \begin{subfigure}{\linewidth}    
         \centering
         \includegraphics[width=\linewidth]{figs/regularization_effect.pdf}
-        \caption{Effect of regularization factor $\eta_{0}$.}
+        \caption{Effect of regularization factor $\eta_{0}$. ($|X| = 213,354$)}
         \label{fig:effects:regularization_effect}
     \end{subfigure}
 
     \begin{subfigure}{\linewidth}
         \centering
         \includegraphics[width=\linewidth]{figs/num_sample_effect.pdf}
-        \caption{Effect of the number of training samples.}
+        \caption{Effect of the number of training samples. ($\eta_{0} = 10^{-1}$)}
         \label{fig:effects:num_samples_effect}
     \end{subfigure}
     \caption{Effect of the learning factors on HDPGMM. Error bar indicates the standard deviation, and grey dots are the raw datapoints.}
@@ -439,33 +439,18 @@ Further, we found that the number of training samples also have a rather clear p
     \hline 
     \multirow{5}*{Echonest} & G1            & 0.0252 ($\pm$ 0.0000) \\ 
                             & VQCodebook    & 0.0158 ($\pm$ 0.0000) \\
-    % \multirow{8}*{Echonest} & G1            & 0.0252 ($\pm$ 0.0000) \\ 
-    %                         & VQCodebook32  & 0.0119 ($\pm$ 0.0000) \\
-    %                         & VQCodebook64  & 0.0111 ($\pm$ 0.0000) \\
-    %                         & VQCodebook128 & 0.0138 ($\pm$ 0.0000) \\
-    %                         & VQCodebook256 & 0.0158 ($\pm$ 0.0000) \\
                             & KIM           & 0.0262 ($\pm$ 0.0012) \\
                             & CLMR          & \textbf{0.0279 ($\pm$ 0.0000)} \\
                             & HDPGMM        & 0.0224 ($\pm$ 0.0004) \\
     \hline
     \multirow{5}*{GTZAN}    & G1            & 0.5409 ($\pm$ 0.0000) \\ 
                             & VQCodebook    & 0.5776 ($\pm$ 0.0000) \\
-    % \multirow{8}*{GTZAN}    & G1            & 0.5409 ($\pm$ 0.0000) \\ 
-    %                         & VQCodebook32  & 0.4508 ($\pm$ 0.0000) \\
-    %                         & VQCodebook64  & 0.5051 ($\pm$ 0.0000) \\
-    %                         & VQCodebook128 & 0.5318 ($\pm$ 0.0000) \\
-    %                         & VQCodebook256 & 0.5776 ($\pm$ 0.0000) \\
                             & KIM           & 0.5448 ($\pm$ 0.0245) \\
                             & CLMR          & \textbf{0.6681 ($\pm$ 0.0000)} \\
                             & HDPGMM        & 0.6471 ($\pm$ 0.0059) \\
     \hline
     \multirow{8}*{MTAT}     & G1            & 0.8435 ($\pm$ 0.0000) \\ 
                             & VQCodebook    & 0.8373 ($\pm$ 0.0000) \\
-    % \multirow{8}*{MTAT}     & G1            & 0.8435 ($\pm$ 0.0000) \\ 
-    %                         & VQCodebook32  & 0.7804 ($\pm$ 0.0000) \\
-    %                         & VQCodebook64  & 0.8035 ($\pm$ 0.0000) \\
-    %                         & VQCodebook128 & 0.8281 ($\pm$ 0.0000) \\
-    %                         & VQCodebook256 & 0.8373 ($\pm$ 0.0000) \\
                             & KIM           & 0.8021 ($\pm$ 0.0041) \\
                             & CLMR          & 0.8248 ($\pm$ 0.0000) \\
                             & HDPGMM        & \textbf{0.8452 ($\pm$ 0.0016)} \\
@@ -474,6 +459,10 @@ Further, we found that the number of training samples also have a rather clear p
 \caption{Evaluation result on downstream tasks.}
 \label{tab:main_result}
 \end{table}
+
+Model comparison result suggests that the HDPGMM model is comparable to the DL representation on average, and can be outperforming in a certain scenario. Reported in Table \ref{tab:main_result}, KIM achieves worse performance on GTZAN and MTAT than HDPGMM, while better at recommendation (Echonest). On the other hand, CLMR, which adopts a more sophisticated learning strategies, performed better in two tasks (GTZAN, Echonest) but still worse in the auto-tagging. It seems, however, Hierarchical mixture model variants (VQCodebook, HDPGMM) performs particularly worse in the recommendation task. We hypothesize that the cosine similarity might not be an optimal choice for the probability simplex representation, which however requires the further study.
+
+Except this corner case, the HDPGMM representation outperforms the other non-DL comparisons in general. Especially, it achieves significant improvement over the simple version of it (VQCodebook) for all tasks, and mostly outperforming G1.
 
 
 \subsection{Component Interpretability}\label{sec:result_discussion:interpretability}
@@ -497,6 +486,8 @@ Further, we found that the number of training samples also have a rather clear p
 \caption{Top tags for a few mostly ``loaded'' components (column-wise). The last row is the normalized total responsibility $\tilde{N}_{k} = \frac{N_{k}}{\sum_{k^{\prime}}^{K} N_{k^{\prime}}}$, meaning the proportional amount of songs having the component.}
 \label{tab:topic_tags}
 \end{table*}
+
+Finally, we 
 
 
 
