@@ -914,3 +914,8 @@
 912,clmr256,magnatagatune,1,2,0.8257223744926269,rocauc_score_macro,,
 913,clmr256,magnatagatune,1,3,0.826899875374898,rocauc_score_macro,,
 914,clmr256,magnatagatune,1,4,0.8250737161190336,rocauc_score_macro,,
+915,clmr256,magnatagatune,2,0,0.8292358769717448,rocauc_score_macro,,
+916,clmr256,magnatagatune,2,1,0.8288303148971099,rocauc_score_macro,,
+917,clmr256,magnatagatune,2,2,0.8285128846257852,rocauc_score_macro,,
+918,clmr256,magnatagatune,2,3,0.8294909207732395,rocauc_score_macro,,
+919,clmr256,magnatagatune,2,4,0.8287224133567102,rocauc_score_macro,,
