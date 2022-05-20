@@ -6,6 +6,7 @@ library(latex2exp)
 
 setwd('/mnt/data/projects/hdpgmm-music-experiments')
 d <- read.csv('./results/results_agg.csv') %>%
+  mutate(n_train = replace(n_train, n_train == '200k', '213k')) %>%
   mutate(dataset = fct_recode(dataset,
                               "MTAT" = "magnatagatune",
                               "GTZAN" = "gtzan",
@@ -14,7 +15,7 @@ d <- read.csv('./results/results_agg.csv') %>%
 
 # PER REGULARIZATION
 # 1. raw
-d %>% filter(!is.na(regularization) & n_train == '200k') %>%
+d %>% filter(!is.na(regularization) & n_train == '213k') %>%
   ggplot(aes(x=regularization, y=score, group=regularization)) +
   # geom_jitter(width=0.2) +
   geom_boxplot() +
@@ -24,14 +25,14 @@ d %>% filter(!is.na(regularization) & n_train == '200k') %>%
 
 # 2. summary
 d.summary <- d %>%
-  filter(!is.na(regularization) & n_train == '200k') %>%
+  filter(!is.na(regularization) & n_train == '213k') %>%
   group_by(regularization, dataset) %>%
   summarise(
     sd = sd(score, na.rm =T),
     score = mean(score)
   )
 (p <- d %>%
-    filter(!is.na(regularization) & n_train == '200k') %>%
+    filter(!is.na(regularization) & n_train == '213k') %>%
     ggplot(aes(x=regularization, y=score)) +
     geom_jitter(position = position_jitter(0.2), alpha = .2) +
     geom_line(aes(group=1, ymin=score - sd, ymax=score + sd), data=d.summary) +
@@ -51,7 +52,7 @@ for (i in 1:length(datasets)) {
   d.summary.dataset = d.summary %>% filter(dataset == datasets[[i]])
   
   p_ <- d %>%
-    filter(!is.na(regularization) & n_train == '200k' & dataset == datasets[[i]]) %>%
+    filter(!is.na(regularization) & n_train == '213k' & dataset == datasets[[i]]) %>%
     ggplot(aes(x=regularization, y=score)) +
     geom_jitter(position = position_jitter(0.2), alpha = .2) +
     geom_line(aes(group=1, ymin=score - sd, ymax=score + sd), data=d.summary.dataset) +
@@ -72,7 +73,7 @@ ggsave('./paper/ismir_submission/figs/regularization_effect.pdf',
 
 
 # PER MODEL
-d %>% filter((regularization == 1e-1 & n_train == '200k') | is.na(regularization)) %>%
+d %>% filter((regularization == 1e-1 & n_train == '213k') | is.na(regularization)) %>%
   mutate(model = factor(model,
                         levels=c("g1",
                                  "vqcodebook32",
@@ -88,7 +89,7 @@ d %>% filter((regularization == 1e-1 & n_train == '200k') | is.na(regularization
   facet_wrap(.~dataset, scales='free_y')
 
 d.all.summary <- d %>%
-  filter((regularization == 1e-1 & n_train == '200k') | is.na(regularization)) %>%
+  filter((regularization == 1e-1 & n_train == '213k') | is.na(regularization)) %>%
   group_by(dataset, model) %>%
   summarise(
     sd = sd(score, na.rm =T),
@@ -116,7 +117,7 @@ for (i in 1:length(datasets)) {
   d.summary.dataset = d.summary %>% filter(dataset == datasets[[i]])
   
   p_ <- d %>% filter(!is.na(n_train) & regularization == 1e-1 & dataset == datasets[[i]]) %>%
-    mutate(n_train = factor(n_train, levels=c("2k", "20k", "200k"))) %>%
+    mutate(n_train = factor(n_train, levels=c("2k", "20k", "213k"))) %>%
     ggplot(aes(x=n_train, y=score)) +
     geom_jitter(position = position_jitter(0.2), alpha = .2) +
     geom_line(aes(group=1, ymin=score - sd, ymax=score + sd), data=d.summary.dataset) +
