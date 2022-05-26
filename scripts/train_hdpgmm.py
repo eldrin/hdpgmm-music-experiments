@@ -33,15 +33,16 @@ class HDFMultiVarSeqAugDataset(HDFMultiVarSeqDataset):
         super().__init__(h5_fn, whiten, chunk_size, verbose)
         self.apply_aug = apply_aug
         self.aug_key = aug_key
-        if apply_aug:
-            self._check_augmentation()
 
         # build original / augmentation dict
         self._data_path_dict = dict()
         self._data_path_dict[0] = 'data'
-        with h5py.File(self.h5_fn, 'r') as hf:
-           for i in range(len(hf[self.aug_key])):
-               self._data_path_dict[i + 1] = f'{self.aug_key}/{i:d}'
+
+        if apply_aug:
+            self._check_augmentation()
+            with h5py.File(self.h5_fn, 'r') as hf:
+               for i in range(len(hf[self.aug_key])):
+                   self._data_path_dict[i + 1] = f'{self.aug_key}/{i:d}'
 
     def _check_augmentation(self):
         """
