@@ -192,9 +192,7 @@ configs.append(tmp_)
 tmp_ = copy.deepcopy(default)
 tmp_['model']['base_noise_ratio'] = 1e-1
 tmp_['model']['max_components_corpus'] = 512
-tmp_['model']['n_max_inner_iter'] = 100
-tmp_['model']['e_step_tol'] = 1e-4
-tmp_['model']['batch_size'] = 256
+tmp_['model']['batch_size'] = 512
 cur_prefix = tmp_['model']['prefix']
 tmp_['model']['prefix'] = f'{cur_prefix}{len(configs):d}'
 configs.append(tmp_)
