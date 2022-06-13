@@ -91,11 +91,10 @@ def main():
     fn = Path(args.model_path)
     out_fn = Path(args.out_path) / f'{args.model_class}_{args.dataset}_{fn.stem}.npz'
     out_fn.parent.mkdir(exist_ok=True, parents=True)
-    np.savez(out_fn, feature=X, ids=dataset.data._hf['ids'][:],
+    np.savez(out_fn, feature=X, ids=dataset.data.ids,
              dataset=np.array(args.dataset),
              model_class=np.array(config['model_class']),
              model_filename=np.array(fn.name))
-    dataset.data._hf.close()  # is it really necessary?
 
 
 if __name__ == "__main__":

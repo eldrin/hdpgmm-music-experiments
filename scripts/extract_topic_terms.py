@@ -131,6 +131,7 @@ def main():
         dataset, model,
         n_max_inner_iter = 1000,
         e_step_tol = 1e-6,
+        max_len = 2600,
         batch_size = args.batch_size,
         device = args.device
     )
