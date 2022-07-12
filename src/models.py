@@ -156,8 +156,8 @@ class HDPGMM(FeatureLearner):
             _model = pkl.load(fp)
 
         model = cls(
-            _model.hdpgmm.max_components_corpus,
-            _model.hdpgmm.max_components_document,
+            _model.max_components_corpus,
+            _model.max_components_document,
         )
         model._model = _model
         return model
@@ -170,7 +170,7 @@ class HDPGMM(FeatureLearner):
             max_components_corpus = self.max_components_corpus,
             max_components_document = self.max_components_document,
             n_iters = len(
-                self._model.hdpgmm.training_monitors['training_lowerbound']
+                self._model.training_monitors['training_lowerbound']
             ),
         )
         return config
