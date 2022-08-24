@@ -88,9 +88,6 @@
 \maketitle
 %
 \begin{abstract}
-    % In the previous decade, Deep Learning (DL) has proven to be one of the most effective machine learning methods to tackle a wide range of Music Information Retrieval (MIR) tasks. It offers the highly expressive learning capacity that can fit any music representations in need for the downstream tasks, which sacrifices interpretability.
-    % On the other hand, the Bayesian nonparametric (BN) approach promises similar properties, such as the high flexibility while being robust to the overfitting and preserving the interpretability. The primary motivation of this work is to explore the potential of Bayesian nonparametric models in MIR tasks by focusing on the representation learning aspect especially compared to the DL models.
-    % We assess the music representation learned from the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM), an infinite mixture model based on the Bayesian nonparametric approach, to MIR tasks, including classifications, auto-tagging, and recommendation.
     In the previous decade, Deep Learning (DL) has proven to be one of the most effective machine learning methods to tackle a wide range of Music Information Retrieval (MIR) tasks. It offers highly expressive learning capacity that can fit any music representation needed for MIR-relevant downstream tasks. However, it has been criticized for sacrificing interpretability.
     On the other hand, the Bayesian nonparametric (BN) approach promises similar positive properties as DL, such as high flexibility. At the same time, it is robust to overfitting and preserves interpretability. Therefore, the primary motivation of this work is to explore the potential of Bayesian nonparametric models in comparison to DL models for music representation learning.
     More specifically, we assess the music representation learned from the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM), an infinite mixture model based on the Bayesian nonparametric approach, to MIR tasks, including classification, auto-tagging, and recommendation.
@@ -101,20 +98,20 @@
 
 Deep learning became one of the most popular and successful methodologies to tackle a various range of MIR tasks; music classification~\cite{musicclassification:book}, music generation~\cite{briot2019deep}, recommendation~\cite{10.3389/fams.2019.00044} and more. Some of the known benefits are 1) the high expressiveness towards any data structure, 2) effective ways to handle the overfitting, and finally, 3) the rapidly improving infrastructural supports, including both hardware (i.e., accelerators such as GPU) and software (i.e., deep learning frameworks). Fuelled by these benefits, DL models can learn useful representations of diverse data, which is one of the key reasons for its success~\cite{DBLP:conf/ismir/HumphreyBL12}. On the other hand, DL models often are criticized for their lack of interpretability~\cite{DBLP:conf/dsaa/GilpinBYBSK18}, also for applications within the MIR domain~\cite{DBLP:journals/tmm/Sturm14,DBLP:journals/cie/Sturm16}.
 
-The Bayesian Nonparametric (BN) approach is an alternative approach to achieving what DL does well in an interpretable way. As a nonparametric method, it can overcome underfitting by unlimited model capacity, while resisting overfitting through its Bayesian nature~\cite{DBLP:reference/ml/Teh17}. At the same time, the model can be interpretable through its probabilistic model structure itself, as the modeling procedure is to infer the data generation process in the first place.
+According to~\cite{molnar2022, DBLP:journals/ai/Miller19}, interpretability of a machine learning model can be defined as the degree to which a user can understand the underlying mechanism of its operation. In this regard, DL models would be substantially less interpretable due to their complex internal structure than simpler yet may be comparably expressive alternatives such as hierarchical probabilistic models.
+
+The Bayesian Nonparametric (BN) approach is such an alternative to achieve what DL does well in an interpretable way. As a nonparametric method, it can overcome underfitting by unlimited model capacity, while resisting overfitting through its Bayesian nature~\cite{DBLP:reference/ml/Teh17}. At the same time, the model can be interpretable through its probabilistic model structure itself, as the modeling procedure is to infer the data generation process in the first place.
 
 In past decades, BN models have been applied in various MIR tasks. For example, they were applied to a latent representation of music audio in estimating music (self) similarity~\cite{DBLP:conf/icassp/QiPC07, DBLP:conf/ismir/HoffmanBC08}. They also were employed to conduct harmonic and spectral analyses by decomposing the time-frequency representation of the music audio into a mixture of countable infinite latent components~\cite{Hoffman09findinglatent, DBLP:conf/icassp/NakanoRKOS11}. These analyses also have shown to be useful for downstream tasks such as structural analysis~\cite{DBLP:conf/icassp/NakanoOKMK12} or music recommendation~\cite{DBLP:conf/ismir/YoshiiG09}. Further, a discriminative model based on the BN was developed for music emotion recognition~\cite{DBLP:journals/taffco/WangLCCH15}.
 
-%Despite the similar promises they propose, however, BN models have not yet gained as much attention as DL in the MIR field. In particular, to our best knowledge, they have not been compared under similar experimental control within the MIR context. As they promise similar high-level properties, it would be worth to explore to what extent they compare.
 While DL gained considerable popularity, it is striking BN models did not gained as much attention. As they promise similar high-level properties and strengths to DL, it will be worthwhile to explore to what extent they compare to modern DL models for MIR-relevant tasks. Therefore, in this work, we will assess music representations learned from BN models, and compare them under similar experimental control with modern deep neural network models.
-%The research goal of this work is to assess the music representation learned from BN models by comparing them to the modern deep neural network models.
-In particular, we consider the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:journals/jmlr/WangPB11,DBLP:conf/ismir/YoshiiG09,doi:10.1198/016214506000000302} as our model of interest. %The comparison can confirm the potential of BN models as a representation learner over the DL methods.
+In particular, we consider the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:journals/jmlr/WangPB11,DBLP:conf/ismir/YoshiiG09,doi:10.1198/016214506000000302} as our model of interest.
 To concretize the comparison, we employ the transfer learning experimental framework~\cite{DBLP:journals/nca/KimULH20, DBLP:conf/ismir/ChoiFSC17, DBLP:conf/ismir/DielemanBS11}, which is commonly used for assessing the potential of learned representations. The contributions of this work can be listed as follows:
 \begin{enumerate}[noitemsep]
     \item We explore and suggest insight into how ``good'' and transferable the HDPGMM representation is for a range of MIR tasks.
     \item We provide an implementation of an efficient, GPU accelerated inference algorithm for HDPGMM, which can handle large-scale music datasets.
 \end{enumerate}
-The remainder of the paper presents the HDPGMM (Section~\ref{sec:hdpgmm}), discuss the experimental setup (Section~\ref{sec:experimental_setup}), followed by its result and discussion (Section~\ref{sec:result_discussion}). Lastly, we conclude with pointers for the future works (Section~\ref{sec:conclusion}).
+% The remainder of the paper presents the HDPGMM (Section~\ref{sec:hdpgmm}), discuss the experimental setup (Section~\ref{sec:experimental_setup}), followed by its result and discussion (Section~\ref{sec:result_discussion}). Lastly, we conclude with pointers for the future works (Section~\ref{sec:conclusion}).
 
 
 \section{HDPGMM}\label{sec:hdpgmm}
@@ -203,11 +200,11 @@ where we use the indicator $z_{jn}$ to select $\psi_{jt}$, which eventually is m
 \subsection{Inference Algorithm}\label{sec:hdpgmm:inference}
 
 We employ the online Variational Inference (VI)~\cite{DBLP:journals/jmlr/WangPB11}, which is a common and significantly faster choice than the Markov Chain Monte Carlo (MCMC) method to infer fully Bayesian models. VI approximates the true posterior by minimizing the Kullback-Leibler (KL) divergence between the approximation $q(Z)$ and the true posterior $p(Z|X)$, where $Z$ denotes the set of latent variables and parameters that we want to find, and $X$ refers a set of observations~\cite{bishop2006pattern}.
-One of the popular simplifications is the full factorization of the distribution $q(Z) = \prod^{|Z|}_{i=1} q_{i}(Z_{i})$. In the context of HDPGMM, we have the following factorization:
+One of the popular simplifications is the full factorization of the distribution $q(Z) = \prod^{|Z|}_{i=1} q_{i}(Z_{i})$. In the context of HDPGMM, we have the following:
 \begin{equation}\label{eq:meanfield_vi_hdpgmm}
     q(\beta^{\prime}, \pi^{\prime}, c, z, \phi) = q(\beta^{\prime})q(\pi^{\prime})q(c)q(z)q(\phi)
 \end{equation}
-where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportions, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers to the parameter(s) for the $F$ which draws the atomic observation, set as (multivariate) Gaussian in our context. Thus, $\phi$ includes the means $\mu$ and precision matrices $\Lambda$ of each Gaussian component\footnote{We adopt the result from \cite{bishop2006pattern}, where the Gaussian-Wishart distribution is used for the prior.}.
+where $\beta^{\prime}, \pi^{\prime}, c, z$ denote the corpus-level and group-level stick proportions, group-level component selection variable, and finally the observation-level component selection variable, respectively. $\phi$ refers to the parameter(s) for the $F$ which draws the atomic observation, set as (multivariate) Gaussian in our context. Thus, $\phi$ includes the means $\mu$ and precision matrices $\Lambda$ of each Gaussian component. We adopt the result from \cite{bishop2006pattern}, where the Gaussian-Wishart distribution is used for the prior.
 
 Each variational distribution further factorizes into:
 \begin{equation}\label{eq:meanfield_further}
@@ -319,16 +316,16 @@ We repeat $5$ evaluation ``runs'' for each learning trial to consider the variou
 \begin{table}[h!]
 \centering
 \small
-\begin{tabular}{ cccc }
+\begin{tabular}{cccc}
     \hline
     Id       & \# Samples & \# Classes/\# Users   & Acc. Measure \\ 
     \hline
     \hline 
     MSD      & $213,354$ & N/A           & N/A          \\ 
     \hline
+    Echonest & $40,980$  & $571,355$\tablefootnote{It refers the number of users in this dataset.} & nDCG~\cite{DBLP:journals/tois/JarvelinK02} \\
     GTZAN    & $1,000$   & $10$          & F1~\cite{DBLP:books/bu/Rijsbergen79} \\
     MTAT     & $25,863$  & $50$          & AUROC~\cite{DBLP:journals/prl/Fawcett06} \\
-    Echonest & $40,980$  & $571,355$\tablefootnote{It refers the number of users in this dataset.} & nDCG~\cite{DBLP:journals/tois/JarvelinK02} \\
     \hline
 \end{tabular}
 \caption{Details on the datasets. We use \emph{macro} average strategy for F1 and Area Under Receiver Operating Characteristic curve (AUROC) measure, and we consider the top $500$ recommended songs for computing the normalized Discounted Cumulative Gain (nDCG).}
@@ -336,12 +333,12 @@ We repeat $5$ evaluation ``runs'' for each learning trial to consider the variou
 \label{tab:dataset}
 \end{table}
 
-We select a set of audio features to infer the HDPGMM and non-DL baseline models inspired by~\cite{DBLP:journals/taffco/WangLCCH15}. The detailed curation of the features can be found in Table~\ref{tab:feature}\footnote{We use the implementation of \texttt{librosa}~\cite{librosa_0_9_1} with the default parameters for all the features.}.
+We select a set of audio features to infer the HDPGMM and non-DL baseline models inspired by~\cite{DBLP:journals/taffco/WangLCCH15}. The detailed curation of the features can be found in Table~\ref{tab:feature}. We use the implementation of \texttt{librosa}~\cite{librosa_0_9_1} with the default parameters for all the features.
 
 \begin{table}[h!]
 \centering
 \small
-\begin{tabular}{ cccc }
+\begin{tabular}{cccc}
     \hline
     Feature       & Aspect   & Dim.   & Transform\\ 
     \hline
@@ -363,7 +360,7 @@ We select a set of audio features to infer the HDPGMM and non-DL baseline models
 We evaluate $4$ comparisons against HDPGMM, including DL-based and non-DL-based models.
 
 \begin{itemize}[noitemsep, leftmargin=*]
-    \item \textbf{G1} is the simplest model among the comparisons. The song-wise feature is represented by the concatenated parameters $\phi = \{\mu, \Sigma\}$ of the single multivariate Gaussian fitted on the frame-level base audio feature vectors within a song\footnote{We chose the diagonalized covariance, which means the feature is the concatenation of \emph{mean} $\mu\in\mathcal{R}^{52}$ and \emph{standard deviation} $\sigma\in\mathcal{R}^{52}$ of features.}.
+    \item \textbf{G1} is the simplest model among the comparisons. The song-wise feature is represented by the concatenated parameters $\phi = \{\mu, \Sigma\}$ of the single multivariate Gaussian fitted on the frame-level base audio feature vectors within a song. We chose the diagonalized covariance, which means the feature is the concatenation of \emph{mean} $\mu\in\mathcal{R}^{52}$ and \emph{standard deviation} $\sigma\in\mathcal{R}^{52}$ of features.
 
     \item \textbf{VQ Codebook} can be deemed as the approximation of HDPGMM models~\cite{DBLP:conf/ismir/HoffmanBC08}. First, a corpus-wise $K$-means clustering is fitted on the frame level features. Later song-level feature is represented by the normalized frequency of cluster assignment of each frame-level feature within the song\footnote{It can be interpreted similarly to the inferred cluster assignment variable $\pi_{j}$ in Eq. (\ref{eq:hdpmm})}. We set $K=256$.
 
@@ -371,9 +368,13 @@ We evaluate $4$ comparisons against HDPGMM, including DL-based and non-DL-based 
     % The objective function of the model is to measure the extent to which a \emph{VGG-like} based Siamese network~\cite{DBLP:journals/corr/SimonyanZ14a, koch2015siamese} can predict whether the two input clips are cropped from the same song or different songs.
     We use the original implementation of the work, which takes the stereo mel-spectrogram of a $2.5$ second-length clip as input. The representation is extracted from the last hidden layer before the prediction and summarized with global average and standard deviation pooling through the entire song.
 
-    \item \textbf{CLMR}~\cite{DBLP:conf/ismir/SpijkervetB21} is a recent DL-based music representation employing self-supervised learning through the contrastive learning method~\cite{DBLP:conf/icml/ChenK0H20}. We employ the original implementation of~\cite{DBLP:conf/ismir/SpijkervetB21} that uses the $2.67$ second-length raw audio samples as input feature\footnote{Unlike the original work, we reduce the dimensionality of the hidden layer, from which we extract the representation, from $512$ to $256$ to control the representation dimensionality with other comparisons. Also, we do not apply the data augmentation for a fair comparison and also as it is beyond the main scope of the work. However, as it is reported that it can meaningfully improve the representation, we assume that applying the method would benefit similarly to other models as well.}. The representation is drawn from the last hidden layer and pooled with the global average over the entire song excerpt.
+    \item \textbf{CLMR}~\cite{DBLP:conf/ismir/SpijkervetB21} is a recent DL-based music representation employing self-supervised learning through the contrastive learning method~\cite{DBLP:conf/icml/ChenK0H20}. We employ the original implementation of~\cite{DBLP:conf/ismir/SpijkervetB21} that uses the $2.67$ second-length raw audio samples as input feature
+        \footnote{Unlike the original work, we reduce the dimensionality of the hidden layer, from which we extract the representation, from $512$ to $256$ to control the representation dimensionality with other comparisons. Also, we do not apply the data augmentation for a fair comparison and also as it is beyond the main scope of the work. However, as it is reported that it can meaningfully improve the representation, we assume that applying the method would benefit similarly to other models as well.}.
+        The representation is drawn from the last hidden layer and pooled with the global average over the entire song excerpt.
 
-    \item \textbf{HDPGMM}\footnote{inference algorithm in \Cref{alg:inference} is implemented on \texttt{PyTorch}~\cite{NEURIPS2019_9015}, and thus supports the GPU acceleration.} uses the base audio feature with the whitening following~\cite{DBLP:conf/ismir/NamHSS12}. As for song-level representation $y_{j}$, we employ the  exponentiation of the expectation $\tilde{y}_{jk} = \text{exp}(\mathbb{E}_{q}[\text{log}\,p(X_{j}|c_{j}, z_{j}, \phi_{k})])$ and normalize them over components and the length of the clip $y_{jk} = N_{j}^{-1}\frac{\tilde{y}_{jk}}{\sum_{k^{\prime}=1}^{K}\tilde{y}_{jk^{\prime}}}$. We adopt many hyper-parameter setups from the result of~\cite{DBLP:journals/jmlr/WangPB11}; we set the truncation of components on the corpus level $K$ and the song level $T$ as $256$ and $32$ respectively, mini-batch size to $1024$, learning rate parameters $\kappa=0.6$ and $\tau_{0}=64$. We, however, explore the regularization rate $\eta_{0} \in \{10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}\}$ and total corpus size $|X| \in \{2\times10^{3}, 2\times10^{4}, 213354\}$ to examine their effect on the representation.
+    \item \textbf{HDPGMM}
+        % \footnote{inference algorithm in \Cref{alg:inference} is implemented on \texttt{PyTorch}~\cite{NEURIPS2019_9015}, and thus supports the GPU acceleration.}
+        uses the base audio feature with the whitening following~\cite{DBLP:conf/ismir/NamHSS12}. As for song-level representation $y_{j}$, we employ the  exponentiation of the expectation $\tilde{y}_{jk} = \text{exp}(\mathbb{E}_{q}[\text{log}\,p(X_{j}|c_{j}, z_{j}, \phi_{k})])$ and normalize them over components and the length of the clip $y_{jk} = N_{j}^{-1}\frac{\tilde{y}_{jk}}{\sum_{k^{\prime}=1}^{K}\tilde{y}_{jk^{\prime}}}$. We adopt many hyper-parameter setups from the result of~\cite{DBLP:journals/jmlr/WangPB11}; we set the truncation of components on the corpus level $K$ and the song level $T$ as $256$ and $32$ respectively, mini-batch size to $1024$, learning rate parameters $\kappa=0.6$ and $\tau_{0}=64$. We, however, explore the regularization rate $\eta_{0} \in \{10^{-4}, 10^{-3}, 10^{-2}, 10^{-1}\}$ and total corpus size $|X| \in \{2\times10^{3}, 2\times10^{4}, 213354\}$ to examine their effect on the representation. The inference algorithm in \Cref{alg:inference} is implemented on \texttt{PyTorch}~\cite{NEURIPS2019_9015} and supports the GPU acceleration.
 \end{itemize}
 
 For all the comparisons except G1, we repeat $3$ learning trials to incorporate any random effect of learning algorithms. Within a trial, we iterated the update for $100$ epochs for KIM, CLMR, and HDPGMM. Further, we set the representation's dimensionality to $256$, homogeneous across all comparisons except $G1$. Finally, we take the logarithm of the representation $\hat{y_{j}} = \text{log}(\text{max}(y_{j}, 10^{-8}))$ if it is given as the probability simplex (i.e., VQCodebook, HDPGMM).
@@ -400,8 +401,8 @@ Further, we find that the number of training samples positively affects the perf
         \caption{Effect of the number of training samples. ($\eta_{0} = 10^{-1}$)}
         \label{fig:effects:num_samples_effect}
     \end{subfigure}
-    \caption{Effect of the learning factors on HDPGMM. The error bar indicates the standard deviation, and grey dots are the raw data points.}
-    \vspace{-0.3cm}
+    \caption{Effect of the learning factors on HDPGMM. Error bars indicate the standard deviations, and the grey dots are the raw data points.}
+    \vspace{-0.5cm}
     \label{fig:effects}
 \end{figure}
 
@@ -443,7 +444,7 @@ Further, we find that the number of training samples positively affects the perf
 \begin{table*}[hbt!]
 \centering
 \small
-\begin{tabular}{ ccccccc }
+\begin{tabular}{ccccccc}
     \hline
     Hip-Hop & country & female vocalists & pop & electronic & pop & oldies \\
     pop & rock & singer-songwriter & female vocalists & dance & soul & blues \\
@@ -457,25 +458,27 @@ Further, we find that the number of training samples positively affects the perf
     \hline
 \end{tabular}
 \caption{Top tags for a few mostly ``loaded'' components (column-wise). The last row is the normalized total responsibility $\tilde{N}_{k} = \frac{N_{k}}{\sum_{k^{\prime}}^{K} N_{k^{\prime}}}$, meaning the proportional amount of songs having the component.}
-\vspace{-0.3cm}
+\vspace{-0.5cm}
 \label{tab:topic_tags}
 \end{table*}
 
+
+\vspace{-0.5cm}
 Model comparison suggests that the HDPGMM model is comparable to the DL representation on average and can outperform in a few specific scenarios. For the comparison, we chose the best HDPGMM model according to the result in \ref{sec:result_discussion:learning_factors} by setting $\eta_{0}=10^{-1}$ and using the entire dataset. As reported in Table \ref{tab:main_result}, KIM achieves worse performance than HDPGMM on GTZAN and MTAT while better at recommendation (Echonest). On the other hand, CLMR, which adopts a more sophisticated learning strategy, achieves the best performance in Echonest, but worse than HDPGMM on the MTAT and comparable on the GTZAN. It is notable that the mixture model variants (VQCodebook, HDPGMM) perform particularly worse in the recommendation task. We hypothesize that the cosine similarity might not be an optimal choice for the probability simplex representation, or the feature set we consider may lack aspects that are crucial for the recommendation; this requires further study.
 
-Except for this corner case, the HDPGMM representation outperforms the other non-DL comparisons in general. It especially achieves significant improvement over its simplified version (VQCodebook) for all tasks, and mostly outperforms G1.
+Except for this case, HDPGMM outperforms the other non-DL comparisons in general. It especially achieves significant improvement over its simplified version (VQCodebook) for all tasks, and mostly outperforms G1.
 
 
 \subsection{Component Interpretability}\label{sec:result_discussion:interpretability}
 
-Finally, we explore the interpretability aspect of the HDPGMM model. To achieve it, we employ the \emph{Lastfm-MSD} music tag dataset~\cite{Bertin-Mahieux2011} where we find the mapping between the MSD songs and the social music tags. All our MSD training samples have mappings to the social tags, whose vocabulary size reaches roughly half a million. We compute the most relevant music tags for each corpus-level component found by the HDPGMM model. We estimate the relevance by a proxy measure $\alpha_{tk} = \sum_{j\in{X}:t\in{j}}N_{j}^{-1}\sum_{n}r_{jnk}$, where $t$ denotes the tag index and $r_{jnk}$ refers the responsibility computed in Eq. (\ref{eq:additional_regularization})\footnote{To improve the clarity and interpretability, we filter the most popular tags by weighting the measure by the Inverse Document Frequency (IDF) for each tag.}. Table \ref{tab:topic_tags} shows an example from one of the HDPGMM with high regularization ($\eta_{0}=10^{-1}$). It suggests that the most frequent component (the first column) can be interpreted as the corpus-wide, universal topic. From second to the rest it represents a few other topics of music, such as \emph{country-rock (column 1)}, \emph{pop-female vocalist (column 2, 3, 5)}, and \emph{electronic-dance (column 4)}. Notably, several compatible topics (i.e., columns 2, 3, and 5) exist, which can be interpreted as the collection of slightly different sub-clusters of an umbrella topic. It suggests that the advanced BN methods such as the hierarchical latent component models using the nested HDP~\cite{DBLP:journals/pami/PaisleyWBJ15} would further improve the representation.
+Finally, we explore the interpretability aspect of the HDPGMM model. To achieve it, we employ the \emph{Lastfm-MSD} music tag dataset~\cite{Bertin-Mahieux2011} where we find the mapping between the MSD songs and the social music tags. All our MSD training samples have mappings to the social tags, whose vocabulary size reaches roughly half a million. We compute the most relevant music tags for each corpus-level component found by the HDPGMM model. We estimate the relevance by a proxy measure $\alpha_{tk} = \sum_{j\in{X}:t\in{j}}N_{j}^{-1}\sum_{n}r_{jnk}$, where $t$ denotes the tag index and $r_{jnk}$ refers the responsibility computed in Eq. (~\ref{eq:additional_regularization}). To improve the clarity and interpretability, we filter the most popular tags by weighting the measure by the Inverse Document Frequency (IDF) for each tag.
+
+Table ~\ref{tab:topic_tags} shows an example from one of the HDPGMM with high regularization ($\eta_{0}=10^{-1}$). It suggests that the most frequent component (the first column) can be interpreted as the corpus-wide, universal topic. From second to the rest it represents a few other topics of music, such as \emph{country-rock (column 1)}, \emph{pop-female vocalist (column 2, 3, 5)}, and \emph{electronic-dance (column 4)}. Notably, several compatible topics (i.e., columns 2, 3, and 5) exist, which can be interpreted as the collection of slightly different sub-clusters of an umbrella topic. It suggests that the advanced BN methods such as the hierarchical latent component models using the nested HDP~\cite{DBLP:journals/pami/PaisleyWBJ15} would further improve the representation.
 
 
 \section{Conclusion and Future Works}\label{sec:conclusion}
 
-In this work, we explore the potential of a BN model in the MIR task space.
-% We assess the effectiveness of representation learned from the HDPGMM applied in a range of MIR downstream tasks compared to the DL-based representations.
-The results suggest that the HDPGMM representation achieves comparable effectiveness over the DL equivalents and outperforms a few scenarios. It implies that the method can be as effective as DL models when used in the supervised learning setup as well, by, for instance, jointly maximizing the variational lower bound both for the data generation and the prediction tasks. It has already been shown that such a joint objective approach can outperform the separated feature learning and transfer strategy that we demonstrate in this work~\cite{DBLP:journals/taffco/WangLCCH15}.
+In this work, we explore the potential of a BN model in the MIR task space. The results suggest that the HDPGMM representation achieves comparable effectiveness over the DL equivalents and outperforms a few scenarios. It implies that the method can be as effective as DL models when used in the supervised learning setup as well, by, for instance, jointly maximizing the variational lower bound both for the data generation and the prediction tasks. It has already been shown that such a joint objective approach can outperform the separated feature learning and transfer strategy that we demonstrate in this work~\cite{DBLP:journals/taffco/WangLCCH15}.
 
 Notably, HDPGMM is one of the more simple models in the BN approach. As mentioned above, there are models that are ``deeper'' such as nested DP models, which allow for a hierarchical structure of latent components~\cite{DBLP:journals/pami/PaisleyWBJ15}. The model also can be improved by introducing a sequential model such as Hidden Markov Models (HMM) as a base distribution~\cite{DBLP:conf/icassp/QiPC07}, as the HDPGMM model assumes the exchangeability of tokens (feature frames), which is not ideal for a music signal.
 % Also, we show that the model can handle a decent scale of the dataset with an efficient implementation employing accelerations such as GPU. We believe that the implementation can be further improved for faster inference, which would allow the bigger model and datasets and longer inferences for better convergence.
