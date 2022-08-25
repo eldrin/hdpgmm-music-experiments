@@ -31,7 +31,7 @@
 
 
 \usepackage{lineno}
-\linenumbers
+% \linenumbers
 
 % Title. Please use IEEE-compliant title case when specifying the title here,
 % as it has implications for the copyright notice
@@ -49,17 +49,17 @@
 
 % Two addresses
 % --------------
-%\twoauthors
-%  {First author} {School \\ Department}
-%  {Second author} {Company \\ Address}
+\twoauthors
+  {Jaehun Kim} {Delft University of Technology \\ Multimedia Computing Group \\ {\tt J.H.Kim@tudelft.nl}}
+  {Cynthia C.S. Liem} {Delft University of Technology \\ Multimedia Computing Group \\ {\tt C.C.S.Liem@tudelft.nl}}
 
 % Three addresses
 % --------------\input{ISMIR2021_paper.tex}
 
-\threeauthors
-  {First Author} {Affiliation1 \\ {\tt author1@ismir.edu}}
-  {Second Author} {\bf Retain these fake authors in\\\bf submission to preserve the formatting}
-  {Third Author} {Affiliation3 \\ {\tt author3@ismir.edu}}
+% \threeauthors
+%   {First Author} {Affiliation1 \\ {\tt author1@ismir.edu}}
+%   {Second Author} {\bf Retain these fake authors in\\\bf submission to preserve the formatting}
+%   {Third Author} {Affiliation3 \\ {\tt author3@ismir.edu}}
 
 % Four or more addresses
 % OR alternative format for large number of co-authors
@@ -100,7 +100,9 @@ Deep learning became one of the most popular and successful methodologies to tac
 
 According to~\cite{molnar2022, DBLP:journals/ai/Miller19}, interpretability of a machine learning model can be defined as the degree to which a user can understand the underlying mechanism of its operation. In this regard, DL models would be substantially less interpretable due to their complex internal structure than simpler yet may be comparably expressive alternatives such as hierarchical probabilistic models.
 
-The Bayesian Nonparametric (BN) approach is such an alternative to achieve what DL does well in an interpretable way. As a nonparametric method, it can overcome underfitting by unlimited model capacity, while resisting overfitting through its Bayesian nature~\cite{DBLP:reference/ml/Teh17}. At the same time, the model can be interpretable through its probabilistic model structure itself, as the modeling procedure is to infer the data generation process in the first place.
+The Bayesian Nonparametric (BN) approach is such an alternative to achieving what DL does well in an interpretable way. As a nonparametric method, it can overcome underfitting by unlimited model capacity, while resisting overfitting through its Bayesian nature~\cite{DBLP:reference/ml/Teh17}.
+% At the same time, the model can be interpretable through its probabilistic model structure itself, as the modeling procedure is to infer the data generation process in the first place.
+At the same time, the model can be interpretable as the probabilistic model structure hypothesizes the data generation process in a relatively simple and humanly understandable manner.
 
 In past decades, BN models have been applied in various MIR tasks. For example, they were applied to a latent representation of music audio in estimating music (self) similarity~\cite{DBLP:conf/icassp/QiPC07, DBLP:conf/ismir/HoffmanBC08}. They also were employed to conduct harmonic and spectral analyses by decomposing the time-frequency representation of the music audio into a mixture of countable infinite latent components~\cite{Hoffman09findinglatent, DBLP:conf/icassp/NakanoRKOS11}. These analyses also have shown to be useful for downstream tasks such as structural analysis~\cite{DBLP:conf/icassp/NakanoOKMK12} or music recommendation~\cite{DBLP:conf/ismir/YoshiiG09}. Further, a discriminative model based on the BN was developed for music emotion recognition~\cite{DBLP:journals/taffco/WangLCCH15}.
 
@@ -116,7 +118,7 @@ To concretize the comparison, we employ the transfer learning experimental frame
 
 \section{HDPGMM}\label{sec:hdpgmm}
 
-In this section, we introduce the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:conf/ismir/HoffmanBC08, doi:10.1198/016214506000000302}. We first discuss the Dirichlet Process Mixture Model (DPMM) upon which the HDPGMM is extended.
+In this section\footnote{We adopted the most of the notations from \cite{DBLP:journals/jmlr/WangPB11, bishop2006pattern}.}, we introduce the Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)~\cite{DBLP:conf/ismir/HoffmanBC08, doi:10.1198/016214506000000302}. We first discuss the Dirichlet Process Mixture Model (DPMM) upon which the HDPGMM is extended.
 
 \subsection{Dirichlet Process Mixture Models}\label{sec:hdpgmm:dpmm}
 
@@ -482,6 +484,11 @@ In this work, we explore the potential of a BN model in the MIR task space. The 
 
 Notably, HDPGMM is one of the more simple models in the BN approach. As mentioned above, there are models that are ``deeper'' such as nested DP models, which allow for a hierarchical structure of latent components~\cite{DBLP:journals/pami/PaisleyWBJ15}. The model also can be improved by introducing a sequential model such as Hidden Markov Models (HMM) as a base distribution~\cite{DBLP:conf/icassp/QiPC07}, as the HDPGMM model assumes the exchangeability of tokens (feature frames), which is not ideal for a music signal.
 % Also, we show that the model can handle a decent scale of the dataset with an efficient implementation employing accelerations such as GPU. We believe that the implementation can be further improved for faster inference, which would allow the bigger model and datasets and longer inferences for better convergence.
+
+
+\section{Acknowledgement}\label{sec:ack}
+
+A part of this work was carried out on the Dutch national e-infrastructure with the support of SURF Coorperative. 
 
 % For bibtex users:
 \bibliography{ISMIRtemplate}
