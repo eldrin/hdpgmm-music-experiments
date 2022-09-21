@@ -16,6 +16,6 @@ dependencies:
   - tqdm==4.62.3
   - h5py==3.6.0
   - pip:
+    - SoundFile==0.10.3.post1
     - pytorch_lightning==0.8.5
-    - soundfile==0.10.3.post1
     - -e git+https://github.com/eldrin/pytorch-hdpgmm@main#egg=hdpgmm
