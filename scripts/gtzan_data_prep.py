@@ -59,7 +59,7 @@ def parse_arguments() -> argparse.ArgumentParser:
                         help="the size of each audio frame, which is to be FFT-ed")
     parser.add_argument("--hop-sz", type=float, default=DEFAULTS['hop_sz'],
                         help="the amount to slide through")
-    parser.add_argument("--feature", type=str, default='mfcc13lnchroma',
+    parser.add_argument("--feature", type=str, default='feature',
                         choices=set(FEATURE_EXT.keys()),
                         help="the type of features to be extracted")
     parser.add_argument('--verbose', default=True,
@@ -72,7 +72,7 @@ def process_track(
     path: Path,
     n_fft: int,
     hop_sz: int,
-    feature: str = 'mfcc13lnchroma',
+    feature: str = 'feature',
     eps: float=1e-8
 ) -> tuple[npt.ArrayLike, str]:
     """ Process a track to mel-spectrogram
