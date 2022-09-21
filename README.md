@@ -20,8 +20,25 @@ conda env create -f environment.yaml
 
 ## Dataset pre-processing
 
-1. Million Song Dataset (the training corpus)
-2. Downstream datasets
-  2.1. GTZAN
-  2.2. MagnaTagATune
-  2.3. Echonest
+### Million Song Dataset (the training corpus)
+
+
+### Downstream datasets
+#### GTZAN
+
+```{bash}
+python scripts/gtzan_data_prep.py
+usage: Data Pre-processing [-h] [--n-fft N_FFT] [--hop-sz HOP_SZ] [--feature {feature,mel}]
+                           [--verbose | --no-verbose]
+                           gtzan_path out_path
+Data Pre-processing: error: the following arguments are required: gtzan_path, out_path
+```
+
+`gtzan_path` needs to be set as the top level directory contains the audio files. (i.e., `genres`directory) If there is no specific parameters set, it extracts the "feature" with default setup where `n_fft=2048`, `hop_s=512`, and `mel_len=128`.
+
+
+#### MagnaTagATune
+
+
+
+#### Echonest
