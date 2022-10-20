@@ -1,0 +1,223 @@
+\documentclass{beamer}
+%% Possible paper sizes: a0, a0b, a1, a2, a3, a4.
+%% Possible orientations: portrait, landscape
+%% Font sizes can be changed using the scale option.
+\usepackage[size=a0,orientation=portrait,scale=1.5]{beamerposter}
+\usetheme{LLT-poster}
+% \usecolortheme{ComingClean}
+\usecolortheme{Entrepreneur}
+% \usecolortheme{ConspiciousCreep}  %% VERY garish.
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{libertine}
+\usepackage[scaled=1]{inconsolata}
+\usepackage[libertine]{newtxmath}
+\usepackage[numbers]{natbib}
+\usepackage{amsmath}
+\renewcommand{\bibfont}{\small}
+
+\newcommand{\texthash}{\#}
+
+
+%% Load the markdown package
+\usepackage[citations,footnotes,definitionLists,hashEnumerators,smartEllipses,tightLists=false,pipeTables,tableCaptions,hybrid]{markdown}
+%%begin novalidate
+\markdownSetup{rendererPrototypes={
+ link = {\href{#2}{#1}},
+ headingFour = {\begin{block}{#1}},
+ horizontalRule = {\end{block}}
+}}
+%%end novalidate
+
+\author[j.h.kim@tudelft.nl]{Jaehun Kim and Cynthia C. S. Liem}
+\title{The Power of Deep without Going Deep? A Study of HDPGMM Music Representation Learning}
+\institute{Delft University of Technology}
+% Optional foot image
+\footimage{\includegraphics[width=12cm]{TUDelft_logo_black.png}}
+
+\begin{document}
+\begin{frame}[fragile]\centering
+
+\begin{columns}
+\begin{column}{0.46\textwidth}
+
+\begin{markdown}
+
+#### Motivation
+
+* In late 2000s - early 2010s, MIR community explored Bayesian Nonparametric (BN) models.
+* After Deep Learning (DL), there are few works exploring BNs.
+* BN can offer advantages what DL provides, while better in interpretability.
+
+----
+\end{markdown}
+\end{column}
+
+\begin{column}{.46\textwidth}
+\begin{markdown}
+
+#### Contributions
+
+* Insight into how "good" and transferable the HDPGMM representation is for MIR tasks.
+* An implementation of a GPU-accelerated inference algorithm for HDPGMM. [@package]
+
+----
+\end{markdown}
+\end{column}
+
+\end{columns}
+
+\bigskip
+{\usebeamercolor[fg]{headline}\hrulefill}
+\bigskip
+
+
+\begin{columns}[T]
+
+%%%% First Column
+\begin{column}{.46\textwidth}
+
+\begin{markdown}
+
+
+#### Deep Learning vs. Bayesian Nonparametric
+
+- **High learning capacity**:
+    * *Universal approximation theorem vs. Nonparametric nature*
+- **Robust to overfitting**:
+    * *Dropout/Weight Decay/Augmentation/etc. vs. Bayesian nature*
+- **Efficient learning algorithm**:
+    * *SGD, ADAM, etc. vs. Online variational inference*
+- **Can go "deep"**:
+    * *Stacked layers vs. (nested) Hierarchical Dirichlet process prior*
+- **Interpretability**:
+    * *(almost) black box vs. can be much better*
+
+----
+
+#### Dirichlet Process Mixture Model (DPMM)
+
+* DP can draw distributions of an arbitrary dimensionality.
+* DPMM can find appropriate number of components for given dataset.
+* It is formally defined as follows:
+
+\begin{equation}
+\begin{aligned}[c]
+    \beta|\gamma &\sim \text{GEM}(\gamma) \\\
+    y\_{i}|\beta &\sim \text{Mult}(\beta) \\\
+\end{aligned}
+\qquad
+\begin{aligned}[c]
+    \phi\_{k}|H &\sim H \\\
+    x\_{i}|y\_{i},\{\phi\_{k}\} &\sim F(\phi\_{y\_{i}}) \\\
+\end{aligned}
+\end{equation}
+
+- 
+* $\beta|\gamma \sim \text{GEM}(\gamma)$ is defined:
+
+\begin{equation}
+\begin{aligned}[c]
+    \beta^{\prime}\_{k} &\sim \text{Beta}(1, \gamma) \\\
+    \beta\_{k} &= \beta^{\prime}\_{k} \prod\_{l=1}^{k-1} (1 - \beta\_{l}^{\prime})
+\end{aligned}
+\end{equation}
+
+*
+* It is referred as the stick-breaking process and graphically illustrated as follows:
+
+\setkeys{Gin}{width=.5\linewidth}
+![stick_breaking](../ismir_submission/figs/stick-breaking.pdf "Illustration of stick-breaking construction")
+
+----
+
+#### Hierarchical DP Gaussian Mixture Model (HDPGMM)
+
+- extends DPMM in 2-level hierarchy (i.e., )
+
+
+---- 
+
+#### Figures and images
+
+
+![exampleimage](example-image.jpg "An exemplary image")
+
+----
+
+\end{markdown}
+
+\end{column}
+
+%%%% Second Column
+\begin{column}{.46\textwidth}
+
+\begin{markdown}
+
+#### This is a sample
+
+- One, two, pick up my shoe
+- Three, four, shut the door
+- Five, six, pick up sticks
+- Seven, eight, lay them straight
+- Nine, ten, a big fat hen
+- One, two, pick up my shoe
+- Three, four, shut the door
+- Five, six, pick up sticks
+- Seven, eight, lay them straight
+- Nine, ten, a big fat hen
+
+----
+
+#### This is another sample
+
+- Some maths material
+
+\begin{align}
+A &= U \times S \times V^T\\
+\sigma &= \frac{x\times y}{\sqrt[3]{\alpha + \beta}}
+\end{align}
+
+----
+
+
+#### `pipeTables` and `tableCaptions`
+
+| Right | Left | Default | Center |
+|------:|:-----|---------|:------:| 
+|  12   |  12  |  12     |   12   | 
+| 123   |  123 |   123   |  123   | 
+|   1   |    1 |     1   |    1   | 
+
+  : Demonstration of pipe table syntax.
+
+----
+
+\end{markdown}
+\end{column}
+\end{columns}
+
+\begin{markdown}
+
+#### This is a sample of a wiiiide column
+
+- One, two, pick up my shoe
+- Three, four, shut the door
+- Five, six, pick up sticks
+
+----
+
+#### Bibliography
+
+\bibliographystyle{unsrtnat}
+\bibliography{refs}
+
+----
+
+\end{markdown}
+
+\end{frame}
+
+
+\end{document}
