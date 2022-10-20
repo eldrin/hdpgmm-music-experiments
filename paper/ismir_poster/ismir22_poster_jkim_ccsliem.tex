@@ -2,7 +2,7 @@
 %% Possible paper sizes: a0, a0b, a1, a2, a3, a4.
 %% Possible orientations: portrait, landscape
 %% Font sizes can be changed using the scale option.
-\usepackage[size=a0,orientation=portrait,scale=1.5]{beamerposter}
+\usepackage[size=a0,orientation=portrait,scale=1.2]{beamerposter}
 \usetheme{LLT-poster}
 % \usecolortheme{ComingClean}
 \usecolortheme{Entrepreneur}
@@ -15,6 +15,7 @@
 \usepackage[libertine]{newtxmath}
 \usepackage[numbers]{natbib}
 \usepackage{amsmath}
+\usepackage[ruled]{algorithm2e}
 \renewcommand{\bibfont}{\small}
 
 \newcommand{\texthash}{\#}
@@ -39,38 +40,9 @@
 \begin{document}
 \begin{frame}[fragile]\centering
 
-\begin{columns}
-\begin{column}{0.46\textwidth}
-
-\begin{markdown}
-
-#### Motivation
-
-* In late 2000s - early 2010s, MIR community explored Bayesian Nonparametric (BN) models.
-* After Deep Learning (DL), there are few works exploring BNs.
-* BN can offer advantages what DL provides, while better in interpretability.
-
-----
-\end{markdown}
-\end{column}
-
-\begin{column}{.46\textwidth}
-\begin{markdown}
-
-#### Contributions
-
-* Insight into how "good" and transferable the HDPGMM representation is for MIR tasks.
-* An implementation of a GPU-accelerated inference algorithm for HDPGMM. [@package]
-
-----
-\end{markdown}
-\end{column}
-
-\end{columns}
-
-\bigskip
-{\usebeamercolor[fg]{headline}\hrulefill}
-\bigskip
+% \bigskip
+% {\usebeamercolor[fg]{headline}\hrulefill}
+% \bigskip
 
 
 \begin{columns}[T]
@@ -80,6 +52,14 @@
 
 \begin{markdown}
 
+
+#### Motivation
+
+* In late 2000s - early 2010s, MIR community explored Bayesian Nonparametric (BN) models.
+* After Deep Learning (DL), there are few works exploring BNs.
+* BN can offer advantages what DL provides, while better in interpretability.
+
+----
 
 #### Deep Learning vs. Bayesian Nonparametric
 
@@ -96,10 +76,34 @@
 
 ----
 
-#### Dirichlet Process Mixture Model (DPMM)
+#### Contributions
+
+* Insight into how "good" and transferable the HDPGMM representation is for MIR tasks.
+* An implementation of a GPU-accelerated inference algorithm for HDPGMM. [@package]
+
+----
+
+\bigskip
+{\usebeamercolor[fg]{headline}\hrulefill}
+\bigskip
+
+#### Hierarchical DP Gaussian Mixture Model (HDPGMM)
 
 * DP can draw distributions of an arbitrary dimensionality.
-* DPMM can find appropriate number of components for given dataset.
+* One of the useful analogy to understand DP is "stick-breaking" process:
+
+\begin{align}
+    \beta^{\prime}\_{k} \sim \text{Beta}(1, \gamma) \qquad
+    \beta\_{k} = \beta^{\prime}\_{k} \prod\_{l=1}^{k-1} (1 - \beta\_{l}^{\prime})
+\end{align}
+
+
+\setkeys{Gin}{width=.45\linewidth}
+![stickbreaking](../ismir_submission/figs/stick-breaking.pdf "Illustration of stick-breaking construction")
+
+* When $\beta$ is drawn in this way, we can refer it as $\beta \sim \text{GEM}(\gamma)$
+
+* Employing DP prior as `mixing distribution`, DPMM can find appropriate number of components for given dataset.
 * It is formally defined as follows:
 
 \begin{equation}
@@ -114,37 +118,30 @@
 \end{aligned}
 \end{equation}
 
-- 
-* $\beta|\gamma \sim \text{GEM}(\gamma)$ is defined:
+
+* DPMM can be extended to the 2-level hierarchy, learning global and group-level components.
+* Group naturally arises in many domains, including MIR problems (i.e., lyrics-words, artist-songs, song-time instance features)
+* In this work we set "corpus-level" time instance features as upper level, and "song" as a groups.
+
+\setkeys{Gin}{width=.7\linewidth}
+![hdpstickbreaking](../ismir_submission/figs/HDP-stick-breaking.pdf "Illustration of HDP stick-breaking construction")
+
+* Song-level components "inherits" the global components with song-specific mixing coefficients $\pi\_{j}$.
+* Setting $F$ as Gaussian-Inverse Wishart distribution and its parameters $\theta$ accordingly, we can model song features 
 
 \begin{equation}
 \begin{aligned}[c]
-    \beta^{\prime}\_{k} &\sim \text{Beta}(1, \gamma) \\\
-    \beta\_{k} &= \beta^{\prime}\_{k} \prod\_{l=1}^{k-1} (1 - \beta\_{l}^{\prime})
+    \pi\_{j}|\alpha\_{0} &\sim \text{GEM}(\alpha\_{0}) \\\
+    z\_{jn}|\pi\_{j} &\sim \text{Mult}(\pi\_{j})
+\end{aligned}
+\qquad
+\begin{aligned}[c]
+    \theta\_{jn} = \psi\_{jz\_{jn}} &= \phi\_{c\_{jz\_{jn}}}  \\\
+    x\_{jn}|z\_{jn}, c\_{jt}, \{\phi\_{k}\} &\sim F(\theta\_{jn}) 
 \end{aligned}
 \end{equation}
 
-*
-* It is referred as the stick-breaking process and graphically illustrated as follows:
-
-\setkeys{Gin}{width=.5\linewidth}
-![stick_breaking](../ismir_submission/figs/stick-breaking.pdf "Illustration of stick-breaking construction")
-
-----
-
-#### Hierarchical DP Gaussian Mixture Model (HDPGMM)
-
-- extends DPMM in 2-level hierarchy (i.e., )
-
-
 ---- 
-
-#### Figures and images
-
-
-![exampleimage](example-image.jpg "An exemplary image")
-
-----
 
 \end{markdown}
 
@@ -155,34 +152,25 @@
 
 \begin{markdown}
 
-#### This is a sample
 
-- One, two, pick up my shoe
-- Three, four, shut the door
-- Five, six, pick up sticks
-- Seven, eight, lay them straight
-- Nine, ten, a big fat hen
-- One, two, pick up my shoe
-- Three, four, shut the door
-- Five, six, pick up sticks
-- Seven, eight, lay them straight
-- Nine, ten, a big fat hen
+#### Inference (Training) / Regularization / Representation
 
-----
-
-#### This is another sample
-
-- Some maths material
+* **Online Variational Inference (OVI)** with the mean field (fully-factorized) approximation.
+* Additionally we "splash" the uniform noise $e$ to the inferred responsibility $r\_{jn}$ per each time instance to take account the missing data due to the preview clipping.
 
 \begin{align}
-A &= U \times S \times V^T\\
-\sigma &= \frac{x\times y}{\sqrt[3]{\alpha + \beta}}
-\end{align}
+\tilde{r}\_{jn} = (1 - \eta\_{t}) r\_{jn} + \eta\_{t} e
+\end{align}  
+
+* We employ the (variational) expectation of log-likelihood of samples $\tilde{y}\_{jk} = \text{exp}(\mathbb{E}\_{q}\[\text{log}\,p(X\_{j}|c\_{j}, z\_{j}, \phi\_{k})\])$ as the song-level representation.
 
 ----
 
+\bigskip
+{\usebeamercolor[fg]{headline}\hrulefill}
+\bigskip
 
-#### `pipeTables` and `tableCaptions`
+#### Experimental Design
 
 | Right | Left | Default | Center |
 |------:|:-----|---------|:------:| 
@@ -199,14 +187,6 @@ A &= U \times S \times V^T\\
 \end{columns}
 
 \begin{markdown}
-
-#### This is a sample of a wiiiide column
-
-- One, two, pick up my shoe
-- Three, four, shut the door
-- Five, six, pick up sticks
-
-----
 
 #### Bibliography
 
