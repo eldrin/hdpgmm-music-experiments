@@ -54,7 +54,8 @@
 
 #### tl;dr
 
-* Bayesian nonparametric models can learn music representation as effectively as Deep Learning while can be more interpretable.
+* Bayesian nonparametric models can learn music representations as effectively as Deep Learning while being more interpretable.
+
 
 ----
 
@@ -150,7 +151,7 @@
 ---- 
 
 
-#### Inference (Training) / Regularization / Representation
+#### Inference (Training) / Regularization / Representation / Input Features
 
 * **Online Variational Inference (OVI)** with the mean-field (fully-factorized) approximation.
 * Additionally, we "splash" the uniform noise $e$ to the inferred responsibility $r\_{jn}$ each time instance to account for the missing data due to the preview clipping.
@@ -160,6 +161,8 @@
 \end{align}  
 
 * We employ the (variational) expectation of log-likelihood of samples $\tilde{y}\_{jk} = \text{exp}(\mathbb{E}\_{q}\[\text{log}\,p(X\_{j}|c\_{j}, z\_{j}, \phi\_{k})\])$ as the song-level representation.
+* Following [@DBLP:journals/taffco/WangLCCH15], we employ a set of music audio features as the input features for HDPGMM models.
+    - *52 Dimensions*: MFCC (13), $\Delta$MFCC (13), $\Delta\Delta$MFCC (13), Onset Strength (1), Chroma (2)
 
 ----
 
@@ -173,21 +176,21 @@
 \begin{markdown}
 
 
-#### Input Features
-
-* Following [@DBLP:journals/taffco/WangLCCH15], we employ a set of music audio features as the input features for HDPGMM models.
-
-| Feature | Aspect | Dim. | Transform |
-|:-------:|:------:|:----:|:---------:|
-| MFCC    | Timbre | 13   | -         |
-| $\Delta$MFCC | Timbre | 13 | -      |
-| $\Delta\Delta$MFCC | Timbre | 13 | - |
-| Onset Strength | Rhythm | 1 | $\text{log}$ |
-| Chroma | Tonal | 12 | $\text{log}$ |
-
-  : Audio features employed for HDPGMM 
-
-----
+% #### Input Features
+% 
+% * Following [@DBLP:journals/taffco/WangLCCH15], we employ a set of music audio features as the input features for HDPGMM models.
+% 
+% | Feature | Aspect | Dim. | Transform |
+% |:-------:|:------:|:----:|:---------:|
+% | MFCC    | Timbre | 13   | -         |
+% | $\Delta$MFCC | Timbre | 13 | -      |
+% | $\Delta\Delta$MFCC | Timbre | 13 | - |
+% | Onset Strength | Rhythm | 1 | $\text{log}$ |
+% | Chroma | Tonal | 12 | $\text{log}$ |
+% 
+%   : Audio features employed for HDPGMM 
+% 
+% ----
 
 \bigskip
 {\usebeamercolor[fg]{headline}\hrulefill}
@@ -199,7 +202,7 @@
     - **G1**: single multivariate Gaussian parameters (mean-sd) per song
     - **VQCodebook**: approximation of HDPGMM, fitting K-Means globally and employing the post-hoc component frequency per song as the representation.
     - **KIM**: VGG-ish convolutional neural network taking stereo mel-spectrogram as input feature, which is trained with a simple self-supervision objective.
-    - **CLMR**: recent DL-based music representation employing advanced self-supervision objective (contrastive learning). It takes time-domain audio samples as input.
+    - **CLMR**: recent DL-based music representations employing advanced self-supervision objective (contrastive learning). It takes time-domain audio samples as input.
 
 
 * three commonly used MIR downstream tasks are considered:
@@ -217,16 +220,30 @@
 
 #### Main Results
 
-\setkeys{Gin}{width=.7\linewidth}
+\setkeys{Gin}{width=.75\linewidth}
 ![mainresult](../ismir_submission/figs/main_result_plot.pdf "Main downstream task evaluation results.")
+
+* HDPGMM shows the overall comparable "performance" against DL-based representations within our experimental setup.
+* HDPGMM representations are competitive to DLs on GTZAN and MTAT, while DL models outperform HDPGMM on Echonest.
+* Overall, HDPGMM outperforms simpler non-DL baselines, except on Echonest.
 
 ----
 
 #### Hyper Parameter Tuning for HDPGMM
 
-\setkeys{Gin}{width=.5\linewidth}
+\setkeys{Gin}{width=.55\linewidth}
 ![regularizationeffect](../ismir_submission/figs/regularization_effect.pdf "Effect of regularization factor.")
+
+* The additional regularization shows an apparent positive effect up to the range we tested.
+* It suggests that employing full-length songs would possibly improve the representation further.
+
+
 ![datasetsizeeffect](../ismir_submission/figs/num_sample_effect.pdf "Effect of the number of training samples.")
+
+* The number of training samples also generally indicates a positive effect on the quality of the representation.
+* However, it is logarithmic than linear, which suggests:
+    - HDPGMM model already generalizes well on the smaller dataset, or
+    - It requires exponentially more data to become more competent.
 
 ----
 
