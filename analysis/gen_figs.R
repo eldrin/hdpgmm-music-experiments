@@ -3,6 +3,7 @@ library(forcats)
 library(ggplot2)
 library(ggpubr)
 library(latex2exp)
+library(stringr)
 
 setwd('/mnt/data/projects/hdpgmm-music-experiments')
 d <- read.csv('./results/results_agg.csv') %>%
@@ -134,3 +135,41 @@ ggsave('./paper/ismir_submission/figs/num_sample_effect.pdf',
        plot=p, width = 2000, height = 900, units="px",
        dpi = 320)
 
+
+
+# MAIN RESULT IN PLOT
+# 1. filter dataset first
+d.filt <- d %>%
+  filter((n_train == '' | n_train == '213k') &
+           (is.na(regularization) | regularization == 1e-1) &
+           model %in% c('g1', 'vqcodebook256', 'hdpgmm', 'clmr256', 'kim')) %>%
+  mutate(model = replace(model, model == 'clmr256', 'CLMR')) %>%
+  mutate(model = replace(model, model == 'vqcodebook256', 'VQCodebook')) %>%
+  mutate(model = replace(model, model == 'hdpgmm', 'HDPGMM')) %>%
+  mutate(model = replace(model, model == 'g1', 'G1')) %>%
+  mutate(model = replace(model, model == 'kim', 'Kim')) %>%
+  mutate(model = factor(model, levels=c('G1', 'VQCodebook', 'Kim', 'CLMR', 'HDPGMM')))
+
+# 2. plot individual panes
+ps = list()
+for (i in 1:length(datasets)) {
+  d.filt.dataset = d.filt %>% filter(dataset == datasets[[i]])
+  
+  p_ <- d.filt.dataset %>%
+    ggplot(aes(x=model, y=score, color=model)) +
+    geom_violin() +
+    geom_jitter(alpha=0.3, width = 0.1) +
+    theme_pubclean() +
+    xlab('') + ylab(acc.measures[[i]]) + facet_wrap(dataset~.) +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 45, hjust=1))
+  ps[[i]] = p_
+}
+(p <- ggarrange(plotlist=ps, nrow = 1, ncol = 3))
+
+ggsave('./paper/ismir_submission/figs/main_result_plot.pdf',
+       plot=p, width = 3000, height = 1500, units="px",
+       dpi = 320)
+ggsave('./paper/ismir_submission/figs/main_result_plot.png',
+       plot=p, width = 3000, height = 1500, units="px",
+       dpi = 320)

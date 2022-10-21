@@ -2,7 +2,7 @@
 %% Possible paper sizes: a0, a0b, a1, a2, a3, a4.
 %% Possible orientations: portrait, landscape
 %% Font sizes can be changed using the scale option.
-\usepackage[size=a0,orientation=portrait,scale=1.2]{beamerposter}
+\usepackage[size=a0,orientation=portrait,scale=1]{beamerposter}
 \usetheme{LLT-poster}
 % \usecolortheme{ComingClean}
 \usecolortheme{Entrepreneur}
@@ -11,7 +11,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{libertine}
-\usepackage[scaled=1]{inconsolata}
+\usepackage[scaled=1.5]{inconsolata}
 \usepackage[libertine]{newtxmath}
 \usepackage[numbers]{natbib}
 \usepackage{amsmath}
@@ -32,10 +32,10 @@
 %%end novalidate
 
 \author[j.h.kim@tudelft.nl]{Jaehun Kim and Cynthia C. S. Liem}
-\title{The Power of Deep without Going Deep? A Study of HDPGMM Music Representation Learning}
+\title{\textbf{The Power of Deep without Going Deep?}\\ \textit{A Study of HDPGMM Music Representation Learning}}
 \institute{Delft University of Technology}
 % Optional foot image
-\footimage{\includegraphics[width=12cm]{TUDelft_logo_black.png}}
+\footimage{\includegraphics[width=6cm]{TUDelft_logo_black.png}}
 
 \begin{document}
 \begin{frame}[fragile]\centering
@@ -51,6 +51,12 @@
 \begin{column}{.46\textwidth}
 
 \begin{markdown}
+
+#### tl;dr
+
+* Bayesian nonparametric models can learn music representation as effective as Deep Learning while can be more interpretable.
+
+----
 
 
 #### Motivation
@@ -103,7 +109,7 @@
 
 * When $\beta$ is drawn in this way, we can refer it as $\beta \sim \text{GEM}(\gamma)$
 
-* Employing DP prior as `mixing distribution`, DPMM can find appropriate number of components for given dataset.
+* Employing DP prior as *mixing distribution*, DPMM can find appropriate number of components for given dataset.
 * It is formally defined as follows:
 
 \begin{equation}
@@ -143,15 +149,6 @@
 
 ---- 
 
-\end{markdown}
-
-\end{column}
-
-%%%% Second Column
-\begin{column}{.46\textwidth}
-
-\begin{markdown}
-
 
 #### Inference (Training) / Regularization / Representation
 
@@ -166,21 +163,102 @@
 
 ----
 
+
+\end{markdown}
+\end{column}
+
+%%%% Second Column
+\begin{column}{.46\textwidth}
+
+\begin{markdown}
+
+
+#### Input Features
+
+* Following [@DBLP:journals/taffco/WangLCCH15], we employ a set of music audio features as the input features for HDPGMM models.
+
+| Feature | Aspect | Dim. | Transform |
+|:-------:|:------:|:----:|:---------:|
+| MFCC    | Timbre | 13   | -         |
+| $\Delta$MFCC | Timbre | 13 | -      |
+| $\Delta\Delta$MFCC | Timbre | 13 | - |
+| Onset Strength | Rhythm | 1 | $\text{log}$ |
+| Chroma | Tonal | 12 | $\text{log}$ |
+
+  : Audio features employed for HDPGMM 
+
+----
+
 \bigskip
 {\usebeamercolor[fg]{headline}\hrulefill}
 \bigskip
 
 #### Experimental Design
 
-| Right | Left | Default | Center |
-|------:|:-----|---------|:------:| 
-|  12   |  12  |  12     |   12   | 
-| 123   |  123 |   123   |  123   | 
-|   1   |    1 |     1   |    1   | 
+* several models compared
+    - **G1**: single multivarariate Gaussian parameters (mean-sd) per song
+    - **VQCodebook**: approximation of HDPGMM, fitting K-Means globally and employing the post-hoc component frequency per song as the representation.
+    - **KIM**: VGG-ish convolutional neural network taking stereo mel-spectrogram as input feature. Trained with simple self-supervision objective.
+    - **CLMR**: recent DL-based music representation emloying advanced self-supervision objective (contrastive learning). It takes time domain audio samples as input.
 
-  : Demonstration of pipe table syntax.
+
+* 3 commonly used MIR downstream tasks are considered:
+
+| Dataset | Purpose | no. Samples  | no. Classes/no. Users  | Acc. Measure |
+|:-------:|:-------:|:------------:|:----------------------:|:------------:|
+|MSD      | Repr. Learning | $213,354$ | N/A               | N/A          |
+|Echonest | Recommendation | $40,980$  | $571,355$         | nDCG         |
+|GTZAN    | Genre Clf. | $1,000$   | $10$              | F1           |
+|MTAT     | Autotagging | $25,863$  | $50$              | AUROC        |
+
+  : Dataset for training representation (MSD) and downstream tasks evaluation (rest)
 
 ----
+
+#### Main Results
+
+\setkeys{Gin}{width=.7\linewidth}
+![mainresult](../ismir_submission/figs/main_result_plot.pdf "Main downstream task evaluation results.")
+
+----
+
+#### Hyper Parameter Tuning for HDPGMM
+
+\setkeys{Gin}{width=.5\linewidth}
+![regularizationeffect](../ismir_submission/figs/regularization_effect.pdf "Effect of regularization factor.")
+![datasetsizeeffect](../ismir_submission/figs/num_sample_effect.pdf "Effect of the number of training samples.")
+
+----
+
+
+#### Interpretability
+
+* Knowing what each part of the probabilistic model is supposed to mean, estimating the meaning of components lead us very good sense of interpretable representation.
+* By intermediating song-tag assignment matrix from MSD, semantics of components can be esimtated.
+
+
+|  Comp1         |  Comp2            |  Comp3            |  Comp4           | Comp5       |
+|:--------------:|:-----------------:|:-----------------:|:----------------:|:-----------:|
+| Hip-Hop        | country           | female vocalists  | pop              | electronic  |
+| pop            | rock              | singer-songwriter | female vocalists | dance       |
+| rnb            | pop               | pop               | female vocalist  | electronica |
+| soul           | oldies            | acoustic          | rock             | funk        |
+| male vocalists | indie             | Mellow            | Love             | electro     |
+
+  : Example of tag-based estimation of the per-component semantics.
+
+----
+
+#### Conclusion \& Future Works
+
+- BN models can learn music representation as effective as DL while can be more interpretable.
+- There are several ways to extend BN models
+    * semi-supervised learning
+    * "deeper" latent structure (nested HDP)
+    * sequence-aware models (infinite HMM)
+
+----
+
 
 \end{markdown}
 \end{column}
