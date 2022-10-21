@@ -54,16 +54,16 @@
 
 #### tl;dr
 
-* Bayesian nonparametric models can learn music representation as effective as Deep Learning while can be more interpretable.
+* Bayesian nonparametric models can learn music representation as effectively as Deep Learning while can be more interpretable.
 
 ----
 
 
 #### Motivation
 
-* In late 2000s - early 2010s, MIR community explored Bayesian Nonparametric (BN) models.
+* In the late 2000s - early 2010s, the MIR community explored Bayesian Nonparametric (BN) models.
 * After Deep Learning (DL), there are few works exploring BNs.
-* BN can offer advantages what DL provides, while better in interpretability.
+* BN can offer advantages that DL provides while being more interpretable.
 
 ----
 
@@ -78,7 +78,7 @@
 - **Can go "deep"**:
     * *Stacked layers vs. (nested) Hierarchical Dirichlet process prior*
 - **Interpretability**:
-    * *(almost) black box vs. can be much better*
+    * *(almost) black-box vs. can be much better*
 
 ----
 
@@ -93,10 +93,10 @@
 {\usebeamercolor[fg]{headline}\hrulefill}
 \bigskip
 
-#### Hierarchical DP Gaussian Mixture Model (HDPGMM)
+#### Hierarchical Dirichlet Process Gaussian Mixture Model (HDPGMM)
 
-* DP can draw distributions of an arbitrary dimensionality.
-* One of the useful analogy to understand DP is "stick-breaking" process:
+* Dirichlet Process (DP) can draw distributions of arbitrary dimensionality.
+* One of the useful analogies to understand DP is the "stick-breaking" process:
 
 \begin{align}
     \beta^{\prime}\_{k} \sim \text{Beta}(1, \gamma) \qquad
@@ -109,7 +109,7 @@
 
 * When $\beta$ is drawn in this way, we can refer it as $\beta \sim \text{GEM}(\gamma)$
 
-* Employing DP prior as *mixing distribution*, DPMM can find appropriate number of components for given dataset.
+* Employing DP prior as *mixing distribution*, DPMM can find an appropriate number of components for a given dataset.
 * It is formally defined as follows:
 
 \begin{equation}
@@ -127,9 +127,9 @@
 
 * DPMM can be extended to the 2-level hierarchy, learning global and group-level components.
 * Group naturally arises in many domains, including MIR problems (i.e., lyrics-words, artist-songs, song-time instance features)
-* In this work we set "corpus-level" time instance features as upper level, and "song" as a groups.
+* In this work, we set "corpus-level" time instance features as the upper level and "song" as a group of features, being the lower level.
 
-\setkeys{Gin}{width=.7\linewidth}
+\setkeys{Gin}{width=.6\linewidth}
 ![hdpstickbreaking](../ismir_submission/figs/HDP-stick-breaking.pdf "Illustration of HDP stick-breaking construction")
 
 * Song-level components "inherits" the global components with song-specific mixing coefficients $\pi\_{j}$.
@@ -152,8 +152,8 @@
 
 #### Inference (Training) / Regularization / Representation
 
-* **Online Variational Inference (OVI)** with the mean field (fully-factorized) approximation.
-* Additionally we "splash" the uniform noise $e$ to the inferred responsibility $r\_{jn}$ per each time instance to take account the missing data due to the preview clipping.
+* **Online Variational Inference (OVI)** with the mean-field (fully-factorized) approximation.
+* Additionally, we "splash" the uniform noise $e$ to the inferred responsibility $r\_{jn}$ each time instance to account for the missing data due to the preview clipping.
 
 \begin{align}
 \tilde{r}\_{jn} = (1 - \eta\_{t}) r\_{jn} + \eta\_{t} e
@@ -196,13 +196,13 @@
 #### Experimental Design
 
 * several models compared
-    - **G1**: single multivarariate Gaussian parameters (mean-sd) per song
+    - **G1**: single multivariate Gaussian parameters (mean-sd) per song
     - **VQCodebook**: approximation of HDPGMM, fitting K-Means globally and employing the post-hoc component frequency per song as the representation.
-    - **KIM**: VGG-ish convolutional neural network taking stereo mel-spectrogram as input feature. Trained with simple self-supervision objective.
-    - **CLMR**: recent DL-based music representation emloying advanced self-supervision objective (contrastive learning). It takes time domain audio samples as input.
+    - **KIM**: VGG-ish convolutional neural network taking stereo mel-spectrogram as input feature, which is trained with a simple self-supervision objective.
+    - **CLMR**: recent DL-based music representation employing advanced self-supervision objective (contrastive learning). It takes time-domain audio samples as input.
 
 
-* 3 commonly used MIR downstream tasks are considered:
+* three commonly used MIR downstream tasks are considered:
 
 | Dataset | Purpose | no. Samples  | no. Classes/no. Users  | Acc. Measure |
 |:-------:|:-------:|:------------:|:----------------------:|:------------:|
@@ -233,8 +233,8 @@
 
 #### Interpretability
 
-* Knowing what each part of the probabilistic model is supposed to mean, estimating the meaning of components lead us very good sense of interpretable representation.
-* By intermediating song-tag assignment matrix from MSD, semantics of components can be esimtated.
+* Knowing what each part of the probabilistic model is supposed to mean and estimating the meaning of components give us a good sense of interpretable representation.
+* By intermediating the song-tag assignment matrix from MSD, the semantics of components can be estimated.
 
 
 |  Comp1         |  Comp2            |  Comp3            |  Comp4           | Comp5       |
@@ -251,7 +251,7 @@
 
 #### Conclusion \& Future Works
 
-- BN models can learn music representation as effective as DL while can be more interpretable.
+- BN models can learn music representation as effectively as DL while being more interpretable.
 - There are several ways to extend BN models
     * semi-supervised learning
     * "deeper" latent structure (nested HDP)
