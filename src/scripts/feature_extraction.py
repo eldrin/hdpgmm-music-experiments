@@ -1,18 +1,15 @@
 from pathlib import Path
 import argparse
 import logging
-import sys
-
-sys.path.append(Path(__file__).parent.parent.as_posix())
 
 import numpy as np
 
-from src.experiment.mtat import load_mtat
-from src.experiment.gtzan import load_gtzan
-from src.experiment.echonest import load_echonest
-from src.experiment.common import (MODEL_MAP,
-                                   load_model,
-                                   process_feature)
+from ..experiment.mtat import load_mtat
+from ..experiment.gtzan import load_gtzan
+from ..experiment.echonest import load_echonest
+from ..experiment.common import (MODEL_MAP,
+                                 load_model,
+                                 process_feature)
 
 
 DATASET_MAP = {
@@ -23,7 +20,7 @@ DATASET_MAP = {
 
 
 logging.basicConfig()
-logger = logging.getLogger("ExtractFeature")
+logger = logging.getLogger(__name__)
 
 np.random.seed(2022)
 
@@ -119,4 +116,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

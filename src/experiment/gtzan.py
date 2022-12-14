@@ -77,6 +77,7 @@ def run_experiment(
     gtzan_split_fn: str,
     n_iters: int = 5,
     batch_size: int = 1024,
+    n_rnd_srch_iter: int = 64,
     n_jobs: int = 1,
     verbose: bool = False
 ) -> list[float]:
@@ -95,7 +96,10 @@ def run_experiment(
         for _ in range(n_iters):
             acc = classification_test(model, dataset,
                                       n_jobs=n_jobs,
+                                      n_rnd_srch_iter=n_rnd_srch_iter,
                                       eval_metric=_macro_f1_scoring)
+
+
             accs.append(acc)
             prog.update()
 

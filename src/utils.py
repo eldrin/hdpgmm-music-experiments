@@ -1,135 +1,198 @@
-# from typing import Union
-# 
-# import numpy as np
-# import numpy.typing as npt
-# import numba as nb
-# import h5py
-# 
-# from tqdm import tqdm
-# 
-# from bibim.data import MVVarSeqData
-# 
-# 
-# def _slice(data: MVVarSeqData, start: int, end: int) -> MVVarSeqData:
-#     """
-#     # This should be implemented on bibim's side in the future
-#     """
-#     assert start < data.num_docs
-#     assert start < end
-#     indptr_ = data.indptr[start:end+1] - data.indptr[start]
-#     data_ = data.data[data.indptr[start]:data.indptr[end]]
-#     ids_ = data.ids[start:end]
-#     return MVVarSeqData(indptr_, data_, ids_)
-# 
-# 
-# def slice_csr_like(
-#     indptr: npt.ArrayLike,
-#     data: h5py.Dataset,
-#     indices: npt.ArrayLike,
-#     verbose: bool = False
-# ) -> MVVarSeqData:
-#     """
-#     """
-#     n_tokens = 0
-#     indptr_slc = [0]
-#     for i in indices:
-#         j0, j1 = indptr[i], indptr[i+1]
-#         indptr_slc.append(indptr_slc[-1] + j1 - j0)
-#         n_tokens += j1 - j0
-#     indptr_slc = np.array(indptr_slc)
-# 
-#     D = data.shape[-1]
-#     data_slc = np.empty((n_tokens, D), dtype=np.float32)
-#     last_idx = 0
-#     with tqdm(total=len(indices), ncols=80, disable=not verbose) as prog:
-#         for i in indices:
-#             j0, j1 = indptr[i], indptr[i+1]
-#             x = data[j0:j1]
-#             data_slc[last_idx:last_idx + j1 - j0] = x
-#             last_idx = last_idx + j1 - j0
-#             prog.update()
-# 
-#     return MVVarSeqData(indptr=indptr_slc, data=data_slc)
-# 
-# 
-# @nb.njit(nogil=True, parallel=True, fastmath=True, boundscheck=False)
-# def mvnorm_standardize(X, mean, prec_chol):
-#     """
-#     """
-#     for i in nb.prange(X.shape[0]):
-#         X[i] = (X[i] - mean) @ prec_chol
-# 
-# 
-# def load_dataset(
-#     hdf_fn: str,
-#     split: bool = True,
-#     train_ratio: float = 0.9,
-#     normalization: bool = True,
-# ) -> Union[tuple[MVVarSeqData,
-#                  list[str],
-#                  dict[str, npt.ArrayLike]],
-#            tuple[dict[str, tuple[MVVarSeqData, list[str]]],
-#                  dict[str, npt.ArrayLike]]]:
-#     """
-#     """
-#     hf = h5py.File(hdf_fn)
-# 
-#     if split:
-#         # slice data in training and test
-# 
-#         # load the file to the memory
-#         # TODO: this might not necessary, but let's keep it simple for now
-#         ids = hf['ids'][:]
-#         indptr = hf['indptr'][:]
-#         data = hf['data']
-# 
-#         n_docs = ids.shape[0]
-#         rnd_idx = np.random.permutation(n_docs)
-#         train_bound = int(train_ratio * n_docs)
-#         tr_idx = rnd_idx[:train_bound]
-#         ts_idx = rnd_idx[train_bound:]
-# 
-#         Xtr = slice_csr_like(indptr, data, tr_idx)
-#         Xts = slice_csr_like(indptr, data, ts_idx)
-# 
-#         # STANDARDIZE
-#         N = Xtr.data.shape[0]
-#         x_bar = Xtr.data.mean(0)
-#         C = ((Xtr.data.T @ Xtr.data) - N * np.outer(x_bar, x_bar)) / (N - 1.)
-#         P = np.linalg.inv(C)
-#         S_chol = np.linalg.cholesky(P).astype(Xtr.data.dtype)
-#         if normalization:
-#             mvnorm_standardize(Xtr.data, x_bar, S_chol)
-#             mvnorm_standardize(Xts.data, x_bar, S_chol)
-# 
-#         hf.close()
-#         return (
-#             {
-#                 'train': (Xtr, ids[tr_idx]),
-#                 'test': (Xts, ids[ts_idx]),
-#             },
-#             {'mean': x_bar, 'prec_chol': S_chol}
-#         )
-# 
-#     else:
-#         ids = [i for i in hf['ids'][:]]
-#         dset = MVVarSeqData(
-#             indptr = hf['indptr'][:],
-#             data = hf['data'][:],
-#             ids = ids
-#         )
-# 
-#         # STANDARDIZE
-#         if normalization:
-#             x_bar = dset.data.mean(0)
-#             C = np.cov(dset.data.T)
-#             P = np.linalg.inv(C)
-#             S_chol = np.linalg.cholesky(P)
-#             mvnorm_standardize(dset.data, x_bar, S_chol)
-#         else:
-#             x_bar = None
-#             S_chol = None
-# 
-# 
-#         hf.close()
-#         return dset, ids, {'mean': x_bar, 'prec_chol': S_chol}
+from typing import Optional
+from pathlib import Path
+import argparse
+import logging
+
+import numpy as np
+
+from .experiment.mtat import load_mtat
+from .experiment.gtzan import load_gtzan
+from .experiment.echonest import load_echonest
+from .experiment.common import (MODEL_MAP,
+                                load_model,
+                                process_feature)
+
+
+DATASET_MAP = {
+    'gtzan': load_gtzan,
+    'mtat': load_mtat,
+    'echonest': load_echonest
+}
+DEFAULT_SEED = 2022
+
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
+
+def knit_path(
+    msd_id: str,
+    out_path: Path
+) -> Path:
+    """ knit full path using target directory and MSD id
+    """
+    # build out dir
+    out_dir = out_path / msd_id[2] / msd_id[3] / msd_id[4]
+
+    # make folder if not exsists
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # knit the output filename
+    p = out_dir / f'{msd_id}.npy'
+
+    return p
+
+
+def extract_feature(
+    model_class: str,
+    dataset_type: str,
+    dataset_path: str,
+    out_path: str,
+    split_path: str,
+    batch_size: int,
+    device: str,
+    model_path: Optional[str] = None,
+) -> None:
+    """ extract feature from feature learners
+
+    Args:
+        model_class: type of model to be processed.
+                     {`hdpgmm`, `vqcodebook`, `G1`, `precomputed`}
+        dataset_type: type of dataset to be processed.
+                      { `gtzan`, `mtat`, `echonest`}
+        dataset_path: path of the dataset.
+        out_path: output path where the result is stored.
+        split_path: path of the data split file.
+        batch_size: size of the mini-batch if applied.
+        device: main computing device. {`cpu`, `cuda`, `cuda:n`, ...}
+        model_path: path of the pre-trained model (optional)
+    """
+    # check if the model path
+    if model_class != 'G1':
+        assert (
+            (model_path is not None) and
+            (Path(model_path).exists())
+        )
+    else:
+        assert model_path is None
+
+    dataset = DATASET_MAP[dataset_type](dataset_path,
+                                        split_path)
+
+    model = load_model(model_path,
+                       model_class,
+                       dataset,
+                       batch_size = batch_size,
+                       device = device)
+    config = model.get_config()
+
+    X, _ = process_feature(model, dataset,
+                           loudness_cols=False)
+
+    # knit output filename
+    if model_class == 'G1':
+        stem = name = model_class
+    else:
+        model_path = Path(model_path)
+        stem = model_path.stem
+        name = model_path.name
+
+    out_fn = Path(out_path) / f'{model_class}_{dataset}_{stem}.npz'
+
+    # check and make parent directory if necessary
+    out_fn.parent.mkdir(exist_ok=True, parents=True)
+
+    # save them
+    np.savez(out_fn, feature=X, ids=dataset.data.ids,
+             dataset=np.array(dataset),
+             model_class=np.array(config['model_class']),
+             model_filename=np.array(name))
+
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="utils",
+        description=(
+            "Feature extraction from the fitted models."
+        )
+    )
+
+    subparsers = parser.add_subparsers(title="command",
+                                       dest="command",
+                                       help="sub-command help")
+    subparsers.required = True
+
+    base_subparser = argparse.ArgumentParser(add_help=False)
+    base_subparser.add_argument("-p", "--path", type=str, default="./",
+                                help="path where the output stored")
+    base_subparser.add_argument("-s", "--random-seed", type=int, default=DEFAULT_SEED,
+                                help="random seed to fix the random generator")
+    base_subparser.add_argument('--verbose', default=True,
+                                action=argparse.BooleanOptionalAction,
+                                help="set verbosity")
+
+    # `extract` sub command ===================================================
+    extract = subparsers.add_parser(
+        'extract', parents=[base_subparser],
+        help='compute learned feature from subset of feature models.'
+    )
+
+    extract.add_argument("model_class", type=str,
+                        choices=set(MODEL_MAP.keys()),
+                        help="class of the feature learner model")
+    extract.add_argument("dataset_path", type=str,
+                        help="path where pre-processed dataset (hdf5) is located")
+    extract.add_argument("dataset", type=str,
+                        choices=set(DATASET_MAP.keys()),
+                        help="dataset (task) name to be computed")
+    extract.add_argument("--model-path", type=str, default=None,
+                        help=("path where fitted feature learner model is "
+                              "located. if it the model class is given as 'G1', "
+                              "model file is not required."))
+    extract.add_argument("--split-path", type=str, default=None,
+                        help="path where split info dataset")
+    extract.add_argument("--device", type=str, default='cpu',
+                        help=(
+                            "specify acceleration device. "
+                            "only relevant for `hdpgmm` model"
+                            " {i.e., 'cpu', 'cuda:0', 'cuda:1', ...}"
+                        ))
+    extract.add_argument('-m', '--batch-size', type=int, default=1024,
+                        help='number of samples per minibatch for feature extraction')
+    extract.add_argument('-j', '--n-jobs', type=int, default=2,
+                        help='number of cores for extract HDPGMM features')
+
+    return parser.parse_args()
+
+
+def main():
+    """
+    TODO: now the program hang with VQCodeBook instance
+          after the feature extraction is finished.
+    """
+    args = parse_arguments()
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+
+    # set random seed
+    np.random.seed(args.random_seed)
+
+    if args.command == "extract":
+
+        extract_feature(
+            args.model_class,
+            args.dataset,
+            args.dataset_path,
+            args.out_path,
+            args.split_path,
+            args.batch_size,
+            args.device,
+            args.model_path,
+        )
+
+    else:
+        ValueError('[ERROR] only `extract` subcommand is available!')
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

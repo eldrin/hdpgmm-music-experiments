@@ -1,26 +1,22 @@
 from pathlib import Path
 import argparse
 import logging
-import sys
 
 import numpy as np
 
 from hdpgmm.data import HDFMultiVarSeqDataset
 
-sys.path.append(Path(__file__).parent.parent.as_posix())
-
-from src.config import DEFAULTS
-from src.models import VQCodebook
+from ..models import VQCodebook
 
 logging.basicConfig()
-logger = logging.getLogger("VQCodebookFit")
+logger = logging.getLogger(__name__)
 
 np.random.seed(2022)
 
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="Fitting VQ Codebook on Frame Level Features",
+        prog="fit_vqcodebook",
         description=(
             "Fitting Vector-Quantization (VC) Codebooks on the frame-level of features"
             ", which will be used one of the baselines."
@@ -72,4 +68,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

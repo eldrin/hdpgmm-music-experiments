@@ -228,13 +228,20 @@ class LitSKLogisticRegression(BaseEstimator, ClassifierMixin):
                                                    batch_size=self.batch_size,
                                                    num_workers=self.num_workers)
 
-        gpus = None if self.accelerator == 'cpu' else [0]
-        trainer = pl.Trainer(accelerator=self.accelerator,
+        gpus = None
+        accelerator = 'cpu'
+        if self.accelerator.startswith('cuda'):
+            device_nr = int(self.accelerator.split(':')[-1])
+            gpus = [device_nr]
+            accelerator = 'gpu'
+
+        trainer = pl.Trainer(accelerator=accelerator,
                              max_epochs=self.max_iter,
                              enable_checkpointing=False,
                              enable_model_summary=False,
                              enable_progress_bar=self.verbose,
-                             gpus=gpus)
+                             auto_select_gpus=False,
+                             devices=gpus)
         trainer.fit(self.logreg_, train_dataloaders=train_loader)
 
         return self

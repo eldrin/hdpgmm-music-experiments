@@ -12,17 +12,21 @@ from scipy import sparse as sp
 from sklearn.metrics import (accuracy_score, f1_score,
                              roc_auc_score,
                              average_precision_score)
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.model_selection import RandomizedSearchCV, ShuffleSplit
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, QuantileTransformer
 
 import torch
 
 from hdpgmm.data import HDFMultiVarSeqDataset
 
 from ..models import (FeatureLearner,
-                      HDPGMM, VQCodebook, G1, PreComputedFeature)
+                      HDPGMM,
+                      VQCodebook,
+                      G1,
+                      # KimSelf,
+                      PreComputedFeature)
 from .custom_modules import LitSKLogisticRegression
 from .itemknn import cos_dist, js_div, build_knn_sim_csr
 
@@ -35,6 +39,7 @@ MODEL_MAP = {
     'hdpgmm': HDPGMM,
     'vqcodebook': VQCodebook,
     'G1': G1,
+    # 'kim': KimSelf,
     'precomputed': PreComputedFeature
 }
 
@@ -176,15 +181,24 @@ class TestDataset:
 
 
 def load_model(
-    model_fn: str,
+    model_fn: Optional[str],
     model_class: str,
     dataset: TestDataset,
     batch_size: int=32,
+    covariance_type: str = 'diag',
+    cholesky: bool = True,
     device: str='cpu'
 ) -> FeatureLearner:
     """
     """
-    model = MODEL_MAP[model_class].load(model_fn)
+    if model_class == 'G1':
+        # G1 doesn't really save the model parameters
+        # (the model parameters equal to the feature)
+        # so every instantiation is fresh.
+        model = G1(covariance_type, cholesky)
+        model.fit()
+    else:
+        model = MODEL_MAP[model_class].load(model_fn)
 
     # modify dataset if model requires "whitening" of features
     if isinstance(model, HDPGMM):
@@ -316,7 +330,8 @@ def classification_test(
 ) -> list[float]:
     """
     """
-    assert accelerator in {'cpu', 'gpu'}
+    if not (accelerator == 'cpu' or accelerator.startswith('cuda')):
+        raise ValueError(f'[ERROR] accelerator {accelerator} is not supported!')
 
     # process feature
     X, y = process_feature(model, dataset)
@@ -347,7 +362,9 @@ def classification_test(
         splits = dataset.splits.copy()
         est = Pipeline([('z_score', StandardScaler()),
                         ('lr', LogisticRegression(max_iter=20000))])
-        dist = dict(lr__C=loguniform(1e-3, 1e+3))
+        # est = Pipeline([('z_score', QuantileTransformer(output_distribution='normal')),
+        #                 ('lr', LogisticRegressionCV(max_iter=10000))])
+        dist = dict(lr__C=loguniform(1e-4, 1e+4))
         # dist = dict(lr__C = (1e-3, 1e+3, 'log-uniform'))
 
     else:
@@ -371,6 +388,7 @@ def classification_test(
             refit = next(iter(eval_metric.keys()))
         else:
             refit = True
+        # clf = est
         clf = RandomizedSearchCV(est, dist,
                                  scoring=eval_metric,
                                  refit=refit,

@@ -1,0 +1,43 @@
+# infra options
+# gpus: 1
+# accelerator: "dp" # use ddp for gpus > 1. also see pytorch lightning documentation on distributed training.
+workers: 4 # i recommend tuning this parameter for faster data augmentation processing
+dataset_dir: "/data/datasets/music_replrn_hdp/gtzan/wavs"
+dataset_name: "gtzan"
+
+# train options
+seed: 42
+batch_size: 48
+# max_epochs: 200
+dataset: "audio" # ["magnatagatune", "msd", "gtzan", "audio"]
+supervised: 0 # train with supervised baseline
+
+# simclr model options
+projection_dim: 64 # projection dim. of simclr projector
+
+# loss options
+optimizer: "adam" # or lars (experimental)
+learning_rate: 0.0003
+weight_decay: 1.0e-6 # "optimized using lars [...] and weight decay of 10−6"
+temperature: 0.5 # see appendix b.7.: optimal temperature under different batch sizes
+
+# reload options
+checkpoint_path: "" # set to the directory containing `checkpoint_##.tar`
+
+# logistic regression options
+finetuner_mlp: 0
+finetuner_checkpoint_path: ""
+finetuner_max_epochs: 200
+finetuner_batch_size: 256
+finetuner_learning_rate: 0.001
+
+# audio data augmentation options
+audio_length: 59049
+sample_rate: 22050
+transforms_polarity: 0.8
+transforms_noise: 0.01
+transforms_gain: 0.3
+transforms_filters: 0.8
+transforms_delay: 0.3
+transforms_pitch: 0.6
+transforms_reverb: 0.6
