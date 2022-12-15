@@ -1,8 +1,9 @@
 HDPGMM Music Experiments
 ========================
 
-
 ***IMPORTANT This repository is still under construction! will be officially "usable" soon. Until then, you can freely check out the codebase. IMPORTANT***
+
+![main_image](./paper/ismir_submission/figs/stick-breaking.png)
 
 
 This repository is a companion material associated with the paper, ["the power of deep without going deep? a study of HDPGMM music representation learning"](https://archives.ismir.net/ismir2022/paper/000013.pdf). In particular, it contains the experimental routine that is used for generating the data and analysis assistant scripts (in R, see `analysis` directory). The main algorithm implementation can be found in [the separate repository](https://github.com/eldrin/pytorch-hdpgmm/tree/ismir22).
@@ -235,9 +236,7 @@ Jaehun Kim (jaehun.j.kim@gmail.com)
 
 ## How to contribute
 
-```
-TBD
-```
+Please leave issues (and perhaps send pull requests)! We don't have yet any format for issues (perhaps TBD), so feel free to take any form for now. Currently I am occupied by several projects and some other personal circumstances so might not guarantee to jump right on the issues, I will try to address them as much as possible.
 
 
 ## TODO
