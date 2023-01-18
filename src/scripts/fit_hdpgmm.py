@@ -129,8 +129,13 @@ def main():
 
     if args.warm_start is not None:
         if Path(args.warm_start).exists():
-            with Path(args.warm_start).open('rb') as fp:
-                warm_start = pkl.load(fp)
+            # TODO: just for backward compatibility. It will be gone once
+            # new IO feature is implemented on main branch.
+            if hasattr(hdpgmm_gpu.HDPGMM, 'load'):
+                warm_start = hdpgmm_gpu.HDPGMM.load(args.warm_start)
+            else:
+                with Path(args.warm_start).open('rb') as fp:
+                    warm_start = pkl.load(fp)
         else:
             raise FileNotFoundError(
                 "[ERROR] can't find the given model check point file!"
