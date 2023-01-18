@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 import pickle as pkl
 
 import numpy as np
@@ -9,6 +8,8 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.mixture import GaussianMixture
+import joblib
+
 import torch
 
 from tqdm import tqdm
@@ -99,6 +100,7 @@ class HDPGMM(FeatureLearner):
         """
         """
         self._model = hdpgmm.variational_inference(
+            data,
             max_components_corpus=self.max_components_corpus,
             max_components_document=self.max_components_document,
             n_epochs=self.n_iters,
@@ -143,8 +145,13 @@ class HDPGMM(FeatureLearner):
     def save(self, path: str):
         """
         """
-        with open(path, 'wb') as fp:
-            pkl.dump(self._model, fp)
+        if hasattr(self._model, 'save'):
+            # this is for the future update on main branch. it's already up to date on
+            # the `ismir22` branch of `pytorch-hdpgmm`
+            self._model.save(path)
+        else:
+            with Path(path).open('wb') as fp:
+                pkl.dump(self._model, fp)
 
     @classmethod
     def load(cls, path: str):
@@ -154,8 +161,13 @@ class HDPGMM(FeatureLearner):
               it should also be saved and loaded properly to
               continue the learning appropriately
         """
-        with open(path, 'rb') as fp:
-            _model = pkl.load(fp)
+        if hasattr(hdpgmm.HDPGMM, 'load'):
+            # this is for the future update on main branch. it's already up to date on
+            # the `ismir22` branch of `pytorch-hdpgmm`
+            _model = hdpgmm.HDPGMM.load(path)
+        else:
+            with Path(path).open('rb') as fp:
+                _model = pkl.load(fp)
 
         model = cls(
             _model.max_components_corpus,
@@ -246,15 +258,13 @@ class VQCodebook(FeatureLearner):
     def save(self, path: str):
         """
         """
-        with open(path, 'wb') as fp:
-            pkl.dump(self._model, fp)
+        joblib.dump(self._model, path, compress=1)
 
     @classmethod
     def load(cls, path: str):
         """
         """
-        with open(path, 'rb') as fp:
-            _model = pkl.load(fp)
+        _model = joblib.load(path)
         n_clusters = _model.steps[1][1].n_clusters
         model = cls(n_clusters = n_clusters)
         model._model = _model
