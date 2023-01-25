@@ -61,7 +61,7 @@ def main():
     logger.info('Inference Done!')
 
     logger.info('Saving...')
-    fn = f'{args.out_fn_prefix}_k{args.n_components:d}.pkl'
+    fn = f'{args.out_fn_prefix}_k{args.n_components:d}.joblib'
     out_fn = Path(args.out_path) / fn
     vq.save(out_fn.as_posix())
     logger.info('Saving done!')

@@ -55,7 +55,12 @@ python scripts/some_script_loads_soundfile.py
 There probably are other hacks such as installing the library through `conda`, (i.e., [libsndfile](https://anaconda.org/conda-forge/libsndfile)), but haven't tested yet.
 
 
-## Dataset downloads
+## Obtain data 
+
+### Preprocessed datasets, pre-trained models, extracted representations
+
+We provide the relevant data files [here](https://data.4tu.nl/info/en/) (this is a dummy URL. the actual URL will be delivered later.) With total size of ~160GB, the package includes: 1) datasets preprocessed with selected audio features, 2) pre-trained models (VQCodebook, HDPGMM, KIM, CLMR), and finally 3) representations extracted from these models.
+
 
 ### Downstream datasets
 
@@ -248,13 +253,28 @@ TBD
 
 ## Cite this work
 
-```
-TBD
+```{bibtex}
+@inproceedings{jaehun_kim_2022_7316610,
+  author       = {Jaehun Kim and
+                  Cynthia C. S. Liem},
+  title        = {{The power of deep without going deep? A study of 
+                   HDPGMM music representation learning}},
+  booktitle    = {{Proceedings of the 23rd International Society for 
+                   Music Information Retrieval Conference}},
+  year         = 2022,
+  pages        = {116-124},
+  publisher    = {ISMIR},
+  address      = {Bengaluru, India},
+  month        = dec,
+  venue        = {Bengaluru, India},
+  doi          = {10.5281/zenodo.7316610},
+  url          = {https://doi.org/10.5281/zenodo.7316610}
+}
 ```
 
 
 ## Acknowledgement
 
 ```
-TBD
+A part of this work was carried out on the Dutch national e-infrastructure with the support of the SURF Cooperative.
 ```
