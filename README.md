@@ -59,7 +59,9 @@ There probably are other hacks such as installing the library through `conda`, (
 
 ### Preprocessed datasets, pre-trained models, extracted representations
 
-We provide the relevant data files [here](https://data.4tu.nl/info/en/) (this is a dummy URL. the actual URL will be delivered later.) With total size of ~160GB, the package includes: 1) datasets preprocessed with selected audio features, 2) pre-trained models (VQCodebook, HDPGMM, KIM, CLMR), and finally 3) representations extracted from these models.
+We provide the relevant data files [here](https://data.4tu.nl/articles/dataset/Supplementary_material_of_the_paper_The_power_of_deep_without_going_deep_A_study_of_HDPGMM_music_representation_learning_/21981442).  With total size of ~140GB, the package includes: 1) datasets preprocessed with selected audio features, 2) pre-trained models (VQCodebook, HDPGMM, KIM, CLMR), and finally 3) representations extracted from these models.
+
+For the detailed description of the data files, please check the data repository linked above.
 
 
 ### Downstream datasets
